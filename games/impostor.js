@@ -19,7 +19,20 @@ const openai = new OpenAI({
 });
 
 
-module.exports = (socket) => {
+io.of("/impostor").on("connection", (socket) => {
+
+  socket.on("create-room", ({ playerName }) => {
+  const roomCode = generateRoomCode();
+  rooms[roomCode] = {
+    hostId: socket.id,
+    players: [{ id: socket.id, name: playerName }]
+  };
+  socket.join(roomCode);
+  socket.data.roomCode = roomCode;
+  socket.data.playerName = playerName;
+  socket.emit("room-created", { roomCode });
+});
+
   
   console.log(`👤 New player connected: ${socket.id}`);
 
@@ -67,7 +80,8 @@ module.exports = (socket) => {
       }
     }
   });
-};
+});
+
 
 // 🔮 Uses OpenAI to generate one normal + N alternate prompts
 async function generatePromptSet(numImpostors) {
