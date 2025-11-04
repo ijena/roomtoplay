@@ -31,8 +31,9 @@ module.exports = (socket) => {
     const numImpostors = Math.floor(Math.random() * (clients.length + 1));
     const impostorIds = new Set(shuffled.slice(0, numImpostors));
  
-    // Request OpenAI to generate prompt set
-    const promptSet = await generatePromptSet(numImpostors);
+    // Request OpenAI to generate prompt set eventually
+    //for now, use static placeholder
+    const promptSet = await generatePromptForRound(numImpostors);
     console.log("📝 Generated prompt set:", promptSet);
     if (!promptSet) return;
 
@@ -92,3 +93,20 @@ Then generate ${numImpostors} alternate versions of that same question that soun
     return null;
   }
 }
+
+async function generatePromptForRound(numImpostors) {
+  // 🔧 Static placeholder prompt
+  const normalPrompt = "What’s your favorite fruit?";
+  
+  // Generate unique impostor versions
+  const impostorPrompts = [
+    "What’s a fruit you dislike?",
+    "What’s the most overrated fruit?",
+    "What fruit would you never eat again?",
+    "Name a fruit that doesn't belong in salad.",
+    "What’s the weirdest fruit you’ve tried?"
+  ].slice(0, numImpostors); // pick as many as needed
+
+  return { normalPrompt, impostorPrompts };
+}
+
