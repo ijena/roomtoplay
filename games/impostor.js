@@ -22,6 +22,7 @@ module.exports = (socket) => {
   });
 
   socket.on("start-round", async () => {
+    console.log("🚀 Start round triggered by", socket.id);
     const roomCode = socket.data.roomCode;
     const clients = Array.from(socket.nsp.adapter.rooms.get(roomCode) || []);
     if (clients.length < 2) return;
