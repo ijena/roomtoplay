@@ -30,7 +30,7 @@ module.exports = (socket) => {
     const shuffled = clients.sort(() => Math.random() - 0.5);
     const numImpostors = Math.floor(Math.random() * (clients.length + 1));
     const impostorIds = new Set(shuffled.slice(0, numImpostors));
-
+ 
     // Request OpenAI to generate prompt set
     const promptSet = await generatePromptSet(numImpostors);
 
@@ -69,7 +69,7 @@ Then generate ${numImpostors} alternate versions of that same question that soun
   "impostors": ["Alt 1", "Alt 2", ..., "Alt N"]
 }`;
 
-    const completion = await openai.createChatCompletion({
+    const completion = await openai.chat.completions.create({
       model: "gpt-4-nano",
       messages: [
         { role: "system", content: systemPrompt },
