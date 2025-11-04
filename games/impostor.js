@@ -155,21 +155,29 @@ Then generate ${numImpostors} alternate versions of that same question that soun
   }
 }
 
-async function generatePromptForRound(numImpostors) {
-  // 🔧 Static placeholder prompt
-  const normal = "What’s your favorite fruit?";
-  
-  // Generate unique impostor versions
-  const impostors = [
-    "What’s a fruit you dislike?",
-    "What’s the most overrated fruit?",
-    "What fruit would you never eat again?",
-    "Name a fruit that doesn't belong in salad.",
-    "What’s the weirdest fruit you’ve tried?"
-  ].slice(0, numImpostors); // pick as many as needed
+function generatePromptForRound(numImpostors) {
+  const normalPrompt = "What's your go-to midnight snack?";
 
-  return { normal, impostors};
+  // Make sure we always have a safe default array
+  const allImpostorPrompts = [
+    "What's a midnight snack that gives you the ick?",
+    "What snack do you avoid before bed?",
+    "What's the worst late-night craving you've had?",
+    "What's a snack you regret eating at night?",
+    "What food keeps you up at night?"
+  ];
+
+  // Shuffle and take as many impostor prompts as needed
+  const shuffled = [...allImpostorPrompts];
+  shuffleArray(shuffled);
+  const selected = shuffled.slice(0, numImpostors);
+
+  return {
+    normalPrompt,
+    impostorPrompts: selected
+  };
 }
+
 
 function generateRoomCode() {
   return Math.random().toString(36).substr(2, 6).toUpperCase();
