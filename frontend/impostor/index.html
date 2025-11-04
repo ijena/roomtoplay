@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Find the Impostor</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+      text-align: center;
+    }
+    input, button {
+      padding: 0.5rem;
+      margin: 0.5rem;
+      font-size: 1rem;
+    }
+    #prompt-box {
+      margin-top: 2rem;
+      font-size: 1.2rem;
+      font-weight: bold;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h1>🕵️ Find the Impostor</h1>
+
+  <input type="text" id="nameInput" placeholder="Your name" />
+  <input type="text" id="roomInput" placeholder="Room code" />
+  <button id="joinBtn">Join Game</button>
+  <button id="startBtn">Start Round</button>
+
+  <div id="prompt-box"></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io('/impostor');
+
+    const joinBtn = document.getElementById('joinBtn');
+    const startBtn = document.getElementById('startBtn');
+    const nameInput = document.getElementById('nameInput');
+    const roomInput = document.getElementById('roomInput');
+    const promptBox = document.getElementById('prompt-box');
+
+    joinBtn.onclick = () => {
+      const name = nameInput.value.trim();
+      const room = roomInput.value.trim();
+      if (!name || !room) return alert("Enter name and room");
+      socket.emit("join", { playerName: name, roomCode: room });
+    };
+
+    startBtn.onclick = () => {
+      socket.emit("start-round");
+    };
+
+    socket.on("prompt", ({ prompt, role }) => {
+      promptBox.innerText = `Your prompt:\n${prompt}\n(Role: ${role})`;
+    });
+
+    socket.on("player-joined", (playerName) => {
+      console.log(`👥 ${playerName} joined the room`);
+    });
+  </script>
+</body>
+</html>
