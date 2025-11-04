@@ -69,7 +69,7 @@ Then generate ${numImpostors} alternate versions of that same question that soun
 }`;
 
     const completion = await openai.createChatCompletion({
-      model: "gpt-4",
+      model: "gpt-4-nano",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt }
