@@ -78,7 +78,7 @@ Then generate ${numImpostors} alternate versions of that same question that soun
       temperature: 0.8,
     });
 
-    const content = completion.data.choices[0].message.content;
+    const content = completion.choices[0].message.content;
     const json = JSON.parse(content);
 
     if (json.normal && Array.isArray(json.impostors)) {
