@@ -2,68 +2,86 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Find the Impostor</title>
+  <title>Room To Play - Impostor Game</title>
   <style>
-    body {
-      font-family: sans-serif;
-      padding: 2rem;
-      text-align: center;
-    }
-    input, button {
-      padding: 0.5rem;
-      margin: 0.5rem;
-      font-size: 1rem;
-    }
-    #prompt-box {
-      margin-top: 2rem;
-      font-size: 1.2rem;
-      font-weight: bold;
-      white-space: pre-wrap;
-    }
+    body { font-family: sans-serif; text-align: center; margin-top: 40px; }
+    input, button { padding: 10px; font-size: 16px; margin: 5px; }
+    #promptDisplay { margin-top: 30px; font-size: 20px; font-weight: bold; }
   </style>
 </head>
 <body>
-  <h1>🕵️ Find the Impostor</h1>
+  <h1>🕵️ Room To Play – Impostor Game</h1>
 
-  <input type="text" id="nameInput" placeholder="Your name" />
-  <input type="text" id="roomInput" placeholder="Room code" />
-  <button id="joinBtn">Join Game</button>
-  <button id="startBtn">Start Round</button>
-  <button id="createBtn">Create Room</button>
+  <div>
+    <input type="text" id="playerName" placeholder="Your name" />
+    <input type="text" id="roomCode" placeholder="Room code (for joining)" />
+  </div>
 
+  <div>
+    <button id="createRoomBtn">Create Room</button>
+    <button id="joinRoomBtn">Join Room</button>
+  </div>
 
-  <div id="prompt-box"></div>
+  <div id="status"></div>
+
+  <div id="hostControls" style="display:none; margin-top: 20px;">
+    <button id="startRoundBtn">Start Round</button>
+  </div>
+
+  <div id="promptDisplay"></div>
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
-    const socket = io('/impostor');
+    const socket = io("/impostor");
 
-    const joinBtn = document.getElementById('joinBtn');
-    const startBtn = document.getElementById('startBtn');
-    const nameInput = document.getElementById('nameInput');
-    const roomInput = document.getElementById('roomInput');
-    const promptBox = document.getElementById('prompt-box');
+    let isHost = false;
 
-    joinBtn.onclick = () => {
-      const name = nameInput.value.trim();
-      const room = roomInput.value.trim();
-      if (!name || !room) return alert("Enter name and room");
-      socket.emit("join", { playerName: name, roomCode: room });
-    };
+    const playerNameInput = document.getElementById("playerName");
+    const roomCodeInput = document.getElementById("roomCode");
+    const statusDiv = document.getElementById("status");
+    const promptDiv = document.getElementById("promptDisplay");
+    const hostControls = document.getElementById("hostControls");
 
-    startBtn.onclick = () => {
-      console.log("▶️ Start Round clicked");
-
-      socket.emit("start-round");
-    };
-
-    socket.on("prompt", ({ prompt}) => {
-      promptBox.innerText = `Your prompt:\n${prompt}\n`;
+    document.getElementById("createRoomBtn").addEventListener("click", () => {
+      const name = playerNameInput.value.trim();
+      if (!name) return alert("Enter your name");
+      socket.emit("create-room", { playerName: name });
     });
 
-    socket.on("player-joined", (playerName) => {
-      console.log(`👥 ${playerName} joined the room`);
+    document.getElementById("joinRoomBtn").addEventListener("click", () => {
+      const name = playerNameInput.value.trim();
+      const room = roomCodeInput.value.trim().toUpperCase();
+      if (!name || !room) return alert("Enter your name and room code");
+      socket.emit("join", { playerName: name, roomCode: room });
+    });
+
+    document.getElementById("startRoundBtn").addEventListener("click", () => {
+      socket.emit("start-round");
+    });
+
+    socket.on("room-created", ({ roomCode }) => {
+      statusDiv.innerText = `✅ Room created! Code: ${roomCode}`;
+      roomCodeInput.value = roomCode;
+      isHost = true;
+      hostControls.style.display = "block";
+    });
+
+    socket.on("joined-room", ({ roomCode }) => {
+      statusDiv.innerText = `✅ Joined room ${roomCode}`;
+    });
+
+    socket.on("prompt", ({ prompt }) => {
+      promptDiv.innerText = `Your prompt: ${prompt}`;
+    });
+
+    socket.on("host-assigned", ({ message }) => {
+      isHost = true;
+      hostControls.style.display = "block";
+      alert(message);
+    });
+
+    socket.on("error", (msg) => {
+      alert("❌ " + msg);
     });
   </script>
 </body>
