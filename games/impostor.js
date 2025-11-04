@@ -1,6 +1,16 @@
 // games/impostor.js
 // Real-time logic for the "Find the Impostor" game with OpenAI-powered prompt generation
 
+const { Server } = require("socket.io");
+
+const io = new Server({
+  cors: { origin: "*" }
+});
+
+//holds all active rooms
+const rooms = {};
+
+
 require("dotenv").config();
 const OpenAI = require("openai");
 
@@ -10,7 +20,9 @@ const openai = new OpenAI({
 
 
 module.exports = (socket) => {
+  
   console.log(`👤 New player connected: ${socket.id}`);
+
 
   socket.on("join", ({ roomCode, playerName }) => {
     socket.join(roomCode);
@@ -108,5 +120,9 @@ async function generatePromptForRound(numImpostors) {
   ].slice(0, numImpostors); // pick as many as needed
 
   return { normal, impostors};
+}
+
+function generateRoomCode() {
+  return Math.random().toString(36).substr(2, 6).toUpperCase();
 }
 
