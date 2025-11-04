@@ -19,8 +19,12 @@ const openai = new OpenAI({
 });
 
 
-io.of("/impostor").on("connection", (socket) => {
 
+module.exports = function registerImpostorGame(io){
+  const namespace = io.of("/impostor");
+
+  namespace.on("connection", (socket) => {
+    console.log(`🎮 Player connected: ${socket.id}`);
   //creating a new room
   socket.on("create-room", ({ playerName }) => {
   const roomCode = generateRoomCode();
@@ -111,7 +115,7 @@ socket.on("disconnect", () => {
 
 });
 });
-
+}
 
 
 // 🔮 Uses OpenAI to generate one normal + N alternate prompts
