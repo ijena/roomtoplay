@@ -21,6 +21,7 @@ const openai = new OpenAI({
 
 io.of("/impostor").on("connection", (socket) => {
 
+  //creating a new room
   socket.on("create-room", ({ playerName }) => {
   const roomCode = generateRoomCode();
   rooms[roomCode] = {
@@ -33,54 +34,84 @@ io.of("/impostor").on("connection", (socket) => {
   socket.emit("room-created", { roomCode });
 });
 
-  
-  console.log(`👤 New player connected: ${socket.id}`);
+socket.on("join", ({ playerName, roomCode }) => {
+  const room = rooms[roomCode];
+  if (!room) return socket.emit("error", "Room not found");
 
+  room.players.push({ id: socket.id, name: playerName });
+  socket.join(roomCode);
+  socket.data.roomCode = roomCode;
+  socket.data.playerName = playerName;
 
-  socket.on("join", ({ roomCode, playerName }) => {
-    socket.join(roomCode);
-    socket.data.playerName = playerName;
-    socket.data.roomCode = roomCode;
+  socket.emit("joined-room", { roomCode });
+});
 
-    console.log(`📥 ${playerName} joined room ${roomCode}`);
-    socket.to(roomCode).emit("player-joined", playerName);
-  });
 
   socket.on("start-round", async () => {
-    console.log("🚀 Start round triggered by", socket.id);
     const roomCode = socket.data.roomCode;
-    const clients = Array.from(socket.nsp.adapter.rooms.get(roomCode) || []);
-    if (clients.length < 2) return;
+    const room = rooms[roomCode];
+    if (!room) return;
+    if (socket.id !== room.hostId) return;
+      const players = room.players;
+      const numImpostors = Math.floor(Math.random() * players.length);
 
-    const shuffled = clients.sort(() => Math.random() - 0.5);
-    const numImpostors = Math.floor(Math.random() * (clients.length + 1));
-    const impostorIds = new Set(shuffled.slice(0, numImpostors));
- 
+        const roles = [
+        Array(players.length - numImpostors).fill("normal"),
+      Array(numImpostors).fill("impostor")
+      ];
+    shuffleArray(roles);
+
     // Request OpenAI to generate prompt set eventually
     //for now, use static placeholder
-    const promptSet = await generatePromptForRound(numImpostors);
-    console.log("📝 Generated prompt set:", promptSet);
-    if (!promptSet) return;
+      const { normalPrompt, impostorPrompts } = generatePromptForRound(numImpostors);
 
-    let impostorIndex = 0;
+  players.forEach((player, index) => {
+    const role = roles[index];
+    const prompt = role === "normal"
+      ? normalPrompt
+      : impostorPrompts.pop() || normalPrompt;
 
-    for (const clientId of clients) {
-      const isImpostor = impostorIds.has(clientId);
-      const clientSocket = socket.nsp.sockets.get(clientId);
-
-      if (clientSocket) {
-        const prompt = isImpostor
-          ? promptSet.impostors[impostorIndex++] || promptSet.normal // fallback
-          : promptSet.normal;
-
-        clientSocket.emit("prompt", {
-          prompt,
-          role: isImpostor ? "impostor" : "normal",
-        });
-      }
-    }
+    io.of("/impostor").to(player.id).emit("prompt", {
+      prompt // role hidden
+    });
   });
+
+socket.on("disconnect", () => {
+    const roomCode = socket.data.roomCode;
+    const room = rooms[roomCode];
+    if (!room) return;
+
+    room.players = room.players.filter((p) => p.id !== socket.id);
+    console.log(`❌ ${socket.data.playerName} left room ${roomCode}`);
+
+    if (socket.id === room.hostId) {
+      console.log(`👑 Host ${socket.data.playerName} disconnected from ${roomCode}`);
+      // Optional: auto-assign new host or close room
+    }
+    if (socket.id === room.hostId) {
+  if (room.players.length > 0) {
+    // Assign new host to the first remaining player
+    room.hostId = room.players[0].id;
+    const newHostName = room.players[0].name;
+
+    // Notify the new host
+    io.of("/impostor").to(room.hostId).emit("host-assigned", {
+      message: `You are now the host of room ${roomCode}`
+    });
+
+    console.log(`👑 New host in ${roomCode}: ${newHostName}`);
+  } else {
+    // Room is empty — optional: delete it
+    delete rooms[roomCode];
+    console.log(`🧹 Room ${roomCode} deleted (empty)`);
+  }
+}
+
+    });
+
 });
+});
+
 
 
 // 🔮 Uses OpenAI to generate one normal + N alternate prompts
