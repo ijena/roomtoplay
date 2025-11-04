@@ -56,8 +56,8 @@
       socket.emit("start-round");
     };
 
-    socket.on("prompt", ({ prompt, role }) => {
-      promptBox.innerText = `Your prompt:\n${prompt}\n(Role: ${role})`;
+    socket.on("prompt", ({ prompt}) => {
+      promptBox.innerText = `Your prompt:\n${prompt}\n`;
     });
 
     socket.on("player-joined", (playerName) => {
