@@ -96,10 +96,10 @@ Then generate ${numImpostors} alternate versions of that same question that soun
 
 async function generatePromptForRound(numImpostors) {
   // 🔧 Static placeholder prompt
-  const normalPrompt = "What’s your favorite fruit?";
+  const normal = "What’s your favorite fruit?";
   
   // Generate unique impostor versions
-  const impostorPrompts = [
+  const impostors = [
     "What’s a fruit you dislike?",
     "What’s the most overrated fruit?",
     "What fruit would you never eat again?",
@@ -107,6 +107,6 @@ async function generatePromptForRound(numImpostors) {
     "What’s the weirdest fruit you’ve tried?"
   ].slice(0, numImpostors); // pick as many as needed
 
-  return { normalPrompt, impostorPrompts };
+  return { normal, impostors};
 }
 
