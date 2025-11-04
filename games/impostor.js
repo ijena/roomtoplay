@@ -33,7 +33,7 @@ module.exports = (socket) => {
  
     // Request OpenAI to generate prompt set
     const promptSet = await generatePromptSet(numImpostors);
-
+    console.log("📝 Generated prompt set:", promptSet);
     if (!promptSet) return;
 
     let impostorIndex = 0;
@@ -70,7 +70,7 @@ Then generate ${numImpostors} alternate versions of that same question that soun
 }`;
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4-nano",
+      model: "gpt-4.1-nano",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt }
