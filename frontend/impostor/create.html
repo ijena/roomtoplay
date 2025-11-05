@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Create Room</title>
+</head>
+<body style="text-align: center; margin-top: 100px; font-family: sans-serif;">
+  <h2>Create a New Room</h2>
+  <input type="text" id="name" placeholder="Enter your name" />
+  <br><br>
+  <button onclick="createRoom()">Create</button>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io("/impostor");
+
+    function createRoom() {
+      const name = document.getElementById("name").value.trim();
+      if (!name) return alert("Please enter your name.");
+
+      localStorage.setItem("playerName", name);
+      socket.emit("create-room", { playerName: name });
+
+      socket.on("room-created", ({ roomCode }) => {
+        localStorage.setItem("roomCode", roomCode);
+        window.location.href = "lobby.html";
+      });
+
+      socket.on("error", msg => alert(msg));
+    }
+  </script>
+</body>
+</html>
