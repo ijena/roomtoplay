@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Game Lobby</title>
+</head>
+<body style="text-align: center; margin-top: 50px; font-family: sans-serif;">
+  <h1>🕵️ Game Lobby</h1>
+  <p id="roomInfo"></p>
+
+  <div id="hostControls" style="display: none;">
+    <button onclick="startRound()">Start Round</button>
+  </div>
+
+  <div id="promptDisplay" style="margin-top: 30px; font-size: 20px;"></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io("/impostor");
+    const name = localStorage.getItem("playerName");
+    const roomCode = localStorage.getItem("roomCode");
+
+    document.getElementById("roomInfo").innerText = `Welcome ${name}! Room: ${roomCode}`;
+
+    socket.on("connect", () => {
+      // Reconnect logic if needed
+    });
+
+    socket.on("prompt", ({ prompt }) => {
+      document.getElementById("promptDisplay").innerText = `Your prompt: ${prompt}`;
+    });
+
+    socket.on("host-assigned", ({ message }) => {
+      alert(message);
+      document.getElementById("hostControls").style.display = "block";
+    });
+
+    // Show host controls if this player was original host
+    socket.on("room-created", () => {
+      document.getElementById("hostControls").style.display = "block";
+    });
+
+    function startRound() {
+      socket.emit("start-round");
+    }
+  </script>
+</body>
+</html>
