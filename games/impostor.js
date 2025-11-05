@@ -1,4 +1,5 @@
 const { Server } = require("socket.io");
+
 const io = new Server({ cors: { origin: "*" } });
 const rooms = {};
 
@@ -8,6 +9,7 @@ module.exports = function registerImpostorGame(io) {
   namespace.on("connection", (socket) => {
     console.log(`🎮 Player connected: ${socket.id}`);
 
+    // Create room
     socket.on("create-room", ({ playerName }) => {
       const roomCode = generateRoomCode();
       rooms[roomCode] = {
@@ -28,6 +30,7 @@ module.exports = function registerImpostorGame(io) {
       namespace.to(roomCode).emit("update-players", rooms[roomCode].players);
     });
 
+    // Join room
     socket.on("join", ({ playerName, roomCode }) => {
       const room = rooms[roomCode];
       if (!room) return socket.emit("error", "Room not found");
@@ -45,6 +48,7 @@ module.exports = function registerImpostorGame(io) {
       namespace.to(roomCode).emit("update-players", room.players);
     });
 
+    // Rejoin logic
     socket.on("rejoin-room", ({ playerName, roomCode }) => {
       const room = rooms[roomCode];
       if (!room) return socket.emit("error", "Room not found");
@@ -71,6 +75,7 @@ module.exports = function registerImpostorGame(io) {
       namespace.to(roomCode).emit("update-players", room.players);
     });
 
+    // Start round
     socket.on("start-round", () => {
       const roomCode = socket.data.roomCode;
       const room = rooms[roomCode];
@@ -78,6 +83,7 @@ module.exports = function registerImpostorGame(io) {
 
       const players = room.players;
       const numImpostors = Math.floor(Math.random() * players.length);
+
       const roles = [
         ...Array(players.length - numImpostors).fill("normal"),
         ...Array(numImpostors).fill("impostor")
@@ -96,6 +102,7 @@ module.exports = function registerImpostorGame(io) {
       });
     });
 
+    // Disconnect logic
     socket.on("disconnect", () => {
       const roomCode = socket.data.roomCode;
       const room = rooms[roomCode];
@@ -121,6 +128,7 @@ module.exports = function registerImpostorGame(io) {
   });
 };
 
+// Generates prompt for the round
 function generatePromptForRound(numImpostors) {
   const normalPrompt = "What's your go-to midnight snack?";
   const allImpostorPrompts = [
@@ -136,10 +144,12 @@ function generatePromptForRound(numImpostors) {
   };
 }
 
+// Generates a random room code
 function generateRoomCode() {
   return Math.random().toString(36).substring(2, 6).toUpperCase();
 }
 
+// Shuffles an array
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
