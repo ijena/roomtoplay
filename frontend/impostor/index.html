@@ -41,9 +41,17 @@
     <h2>Game Lobby</h2>
     <p id="roomInfo"></p>
     <div id="playerList"></div>
+    <div id="currentSettings"></div>
     <div id="hostControls" style="display: none;">
-      <button onclick="startRound()">Start Round</button>
-    </div>
+  <label for="impostorModeSelect"><strong>Impostor Mode:</strong></label>
+  <select id="impostorModeSelect" onchange="updateImpostorSetting()">
+    <option value="one">One Impostor</option>
+    <option value="variable">Variable Impostors</option>
+  </select>
+  <br>
+  <button onclick="startRound()">Start Round</button>
+</div>
+
     <div id="promptBox"></div>
   </div>
 
@@ -79,6 +87,17 @@
     function startRound() {
       socket.emit("start-round");
     }
+    function updateImpostorSetting() {
+  const selected = document.getElementById("impostorModeSelect").value;
+  socket.emit("update-settings", { impostorMode: selected });
+}
+
+function updateCurrentSettings(settings) {
+  const modeText = settings.impostorMode === "one" ? "One Impostor" : "Variable Impostors";
+  document.getElementById("currentSettings").innerHTML = `<em>Impostor Mode: ${modeText}</em>`;
+  document.getElementById("impostorModeSelect").value = settings.impostorMode;
+}
+
 
     // Reconnect support
     socket.on("connect", () => {
@@ -114,6 +133,9 @@
     socket.on("update-players", (players) => {
   const list = players.map(p => `• ${p.name}`).join("<br>");
   document.getElementById("playerList").innerHTML = `<strong>Players:</strong><br>${list}`;
+});
+    socket.on("settings-updated", (settings) => {
+  updateCurrentSettings(settings);
 });
 
 

@@ -29,9 +29,13 @@ module.exports = function registerImpostorGame(io){
   socket.on("create-room", ({ playerName }) => {
   const roomCode = generateRoomCode();
   rooms[roomCode] = {
-    hostId: socket.id,
-    players: [{ id: socket.id, name: playerName }]
-  };
+  hostId: socket.id,
+  players: [{ id: socket.id, name: playerName }],
+  settings: {
+    impostorMode: "variable" // default
+  }
+};
+
 
   const room = rooms[roomCode];
 
@@ -40,7 +44,8 @@ module.exports = function registerImpostorGame(io){
   socket.data.playerName = playerName;
   socket.emit("room-created", {
   roomCode,
-  players: room.players // ✅ this must be included
+  players: room.players,
+  settings: room.settings
 });
 
 
@@ -63,11 +68,25 @@ socket.on("join", ({ playerName, roomCode }) => {
   socket.data.playerName = playerName;
   socket.emit("joined-room", {
   roomCode,
-  players: room.players // ✅ this must be included
+  players: room.players,
+  settings: room.settings
 });
   // socket.emit("joined-room", { roomCode });
   io.of("/impostor").to(roomCode).emit("update-players", room.players);
 
+});
+
+  socket.on("update-settings", (newSettings) => {
+  const roomCode = socket.data.roomCode;
+  const room = rooms[roomCode];
+  if (!room || socket.id !== room.hostId) return;
+
+  room.settings = {
+    ...room.settings,
+    ...newSettings
+  };
+
+  io.of("/impostor").to(roomCode).emit("settings-updated", room.settings);
 });
 
 
@@ -81,7 +100,12 @@ socket.on("join", ({ playerName, roomCode }) => {
       return;
     }
       const players = room.players;
-      const numImpostors = Math.floor(Math.random() * players.length);
+      const impostorMode = room.settings.impostorMode || "variable";
+      const numImpostors =
+      impostorMode === "one"
+    ? 1
+    : Math.floor(Math.random() * players.length);
+
 
         const roles = [
         Array(players.length - numImpostors).fill("normal"),
