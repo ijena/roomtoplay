@@ -53,19 +53,19 @@
     // Tell server we want to rejoin this room (in case of reload)
     socket.emit("rejoin-room", { playerName, roomCode });
 
-    // If host, show start round button
-    socket.on("host-assigned", ({ message }) => {
-      console.log("🟢 Host assigned:", message);
-      document.getElementById("hostControls").style.display = "block";
-      alert(message);
-    });
-
-    // Also show start button if you just created the room
     socket.on("room-created", ({ roomCode, isHost }) => {
-    if (isHost) {
+  console.log("Room created:", roomCode);
+  if (isHost) {
     document.getElementById("hostControls").style.display = "block";
   }
 });
+
+socket.on("host-assigned", ({ message }) => {
+  console.log(message);
+  document.getElementById("hostControls").style.display = "block";
+});
+
+
 
 
     // Show prompt when the round starts

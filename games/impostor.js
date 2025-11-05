@@ -40,6 +40,8 @@ module.exports = function registerImpostorGame(io){
 
   // Also emit host-assigned immediately
   socket.emit("host-assigned", { message: `You are the host of room ${roomCode}` });
+  console.log(`✅ Room created: ${roomCode} | Host: ${playerName}`);
+
 });
 
 
