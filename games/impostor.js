@@ -26,7 +26,7 @@ module.exports = function registerImpostorGame(io){
   namespace.on("connection", (socket) => {
     console.log(`🎮 Player connected: ${socket.id}`);
   //creating a new room
-  ssocket.on("create-room", ({ playerName }) => {
+  socket.on("create-room", ({ playerName }) => {
   const roomCode = generateRoomCode();
   rooms[roomCode] = {
     hostId: socket.id,
