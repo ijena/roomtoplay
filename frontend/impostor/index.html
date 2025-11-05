@@ -1,12 +1,108 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Room To Play</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RoomToPlay: Impostor Game</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; padding: 2em; }
+    .screen { display: none; }
+    .active { display: block; }
+    input, button { padding: 10px; margin: 5px; font-size: 16px; }
+    #promptBox { margin-top: 2em; font-size: 1.2em; font-weight: bold; white-space: pre-wrap; }
+  </style>
 </head>
-<body style="text-align: center; margin-top: 100px; font-family: sans-serif;">
-  <h1>🎮 Room To Play</h1>
-  <p>Choose an option:</p>
-  <button onclick="location.href='create.html'">Create Room</button>
-  <button onclick="location.href='join.html'">Join Room</button>
+<body>
+  <h1>🕵️ RoomToPlay: Find the Impostor</h1>
+
+  <!-- Home Screen -->
+  <div id="homeScreen" class="screen active">
+    <button onclick="showScreen('createScreen')">Create Room</button>
+    <button onclick="showScreen('joinScreen')">Join Room</button>
+  </div>
+
+  <!-- Create Room Screen -->
+  <div id="createScreen" class="screen">
+    <h2>Create Room</h2>
+    <input type="text" id="createName" placeholder="Your name" />
+    <button onclick="createRoom()">Create</button>
+  </div>
+
+  <!-- Join Room Screen -->
+  <div id="joinScreen" class="screen">
+    <h2>Join Room</h2>
+    <input type="text" id="joinName" placeholder="Your name" />
+    <input type="text" id="joinCode" placeholder="Room code" />
+    <button onclick="joinRoom()">Join</button>
+  </div>
+
+  <!-- Lobby/Game Screen -->
+  <div id="lobbyScreen" class="screen">
+    <h2>Game Lobby</h2>
+    <p id="roomInfo"></p>
+    <div id="hostControls" style="display: none;">
+      <button onclick="startRound()">Start Round</button>
+    </div>
+    <div id="promptBox"></div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io("/impostor");
+    let playerName = "";
+    let roomCode = "";
+
+    function showScreen(screenId) {
+      document.querySelectorAll('.screen').forEach(div => div.classList.remove('active'));
+      document.getElementById(screenId).classList.add('active');
+    }
+
+    function createRoom() {
+      playerName = document.getElementById("createName").value.trim();
+      if (!playerName) return alert("Enter your name.");
+      socket.emit("create-room", { playerName });
+    }
+
+    function joinRoom() {
+      playerName = document.getElementById("joinName").value.trim();
+      roomCode = document.getElementById("joinCode").value.trim().toUpperCase();
+      if (!playerName || !roomCode) return alert("Fill in both fields.");
+      socket.emit("join", { playerName, roomCode });
+    }
+
+    function startRound() {
+      socket.emit("start-round");
+    }
+
+    // Reconnect support
+    socket.on("connect", () => {
+      if (playerName && roomCode) {
+        socket.emit("rejoin-room", { playerName, roomCode });
+      }
+    });
+
+    socket.on("room-created", ({ roomCode: code }) => {
+      roomCode = code;
+      document.getElementById("roomInfo").innerText = `Room: ${roomCode} | You: ${playerName}`;
+      showScreen("lobbyScreen");
+    });
+
+    socket.on("joined-room", ({ roomCode: code }) => {
+      roomCode = code;
+      document.getElementById("roomInfo").innerText = `Room: ${roomCode} | You: ${playerName}`;
+      showScreen("lobbyScreen");
+    });
+
+    socket.on("host-assigned", ({ message }) => {
+      document.getElementById("hostControls").style.display = "block";
+      console.log(message);
+    });
+
+    socket.on("prompt", ({ prompt }) => {
+      document.getElementById("promptBox").innerText = `Your prompt:\n${prompt}`;
+    });
+
+    socket.on("error", (msg) => alert("❌ " + msg));
+  </script>
 </body>
 </html>
