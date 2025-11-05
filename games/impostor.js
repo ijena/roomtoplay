@@ -93,19 +93,27 @@ module.exports = function registerImpostorGame(io) {
       room.players = room.players.filter((p) => p.id !== socket.id);
       console.log(`❌ ${socket.data.playerName} left room ${roomCode}`);
 
-      if (socket.id === room.hostId) {
-        if (room.players.length > 0) {
-          room.hostId = room.players[0].id;
-          const newHost = room.players[0];
-          namespace.to(newHost.id).emit("host-assigned", {
-            message: `You are now the host of room ${roomCode}`
-          });
-          console.log(`👑 New host assigned: ${newHost.name}`);
-        } else {
-          delete rooms[roomCode];
-          console.log(`🧹 Room ${roomCode} deleted`);
-        }
+     if (socket.id === room.hostId) {
+  if (room.players.length > 0) {
+    // reassign host
+    room.hostId = room.players[0].id;
+    namespace.to(room.hostId).emit("host-assigned", {
+      message: `You are now the host of room ${roomCode}`
+    });
+  } else {
+    console.log(`⏳ Room ${roomCode} is empty. Waiting 10 seconds before deletion...`);
+
+    // Set a timeout to allow reconnection
+    setTimeout(() => {
+      const stillEmpty = !rooms[roomCode] || rooms[roomCode].players.length === 0;
+      if (stillEmpty) {
+        delete rooms[roomCode];
+        console.log(`🧹 Room ${roomCode} deleted after timeout`);
       }
+    }, 10000); // 10 seconds
+  }
+}
+
     });
   });
 };
