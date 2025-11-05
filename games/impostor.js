@@ -38,8 +38,13 @@ module.exports = function registerImpostorGame(io){
   socket.join(roomCode);
   socket.data.roomCode = roomCode;
   socket.data.playerName = playerName;
+  socket.emit("room-created", {
+  roomCode,
+  players: room.players // ✅ this must be included
+});
 
-  socket.emit("room-created", { roomCode, isHost: true });
+
+  // socket.emit("room-created", { roomCode, isHost: true });
   socket.emit("host-assigned", { message: `You are the host of room ${roomCode}` });
 
   io.of("/impostor").to(roomCode).emit("update-players", room.players);
