@@ -61,8 +61,11 @@ socket.on("join", ({ playerName, roomCode }) => {
   socket.join(roomCode);
   socket.data.roomCode = roomCode;
   socket.data.playerName = playerName;
-
-  socket.emit("joined-room", { roomCode });
+  socket.emit("joined-room", {
+  roomCode,
+  players: room.players // ✅ this must be included
+});
+  // socket.emit("joined-room", { roomCode });
   io.of("/impostor").to(roomCode).emit("update-players", room.players);
 
 });
