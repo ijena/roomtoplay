@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Join Room</title>
+</head>
+<body style="text-align: center; margin-top: 100px; font-family: sans-serif;">
+  <h2>Join a Room</h2>
+  <input type="text" id="name" placeholder="Your name" />
+  <br><br>
+  <input type="text" id="room" placeholder="Room code (e.g., A2B3)" />
+  <br><br>
+  <button onclick="joinRoom()">Join</button>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io("/impostor");
+
+    function joinRoom() {
+      const name = document.getElementById("name").value.trim();
+      const room = document.getElementById("room").value.trim().toUpperCase();
+
+      if (!name || !room) return alert("Enter both name and room code.");
+
+      localStorage.setItem("playerName", name);
+      localStorage.setItem("roomCode", room);
+      socket.emit("join", { playerName: name, roomCode: room });
+
+      socket.on("joined-room", () => {
+        window.location.href = "lobby.html";
+      });
+
+      socket.on("error", msg => alert(msg));
+    }
+  </script>
+</body>
+</html>
