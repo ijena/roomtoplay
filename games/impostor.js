@@ -91,42 +91,54 @@ socket.on("join", ({ playerName, roomCode }) => {
 
 
   socket.on("start-round", async () => {
-    const roomCode = socket.data.roomCode;
-    const room = rooms[roomCode];
-    if (!room) return;
-    if (socket.id !== room.hostId) return;
-    if(room.players.length < 3) {
-      socket.emit("error", "At least 3 players required to start the round.");
-      return;
-    }
-      const players = room.players;
-      const impostorMode = room.settings.impostorMode || "variable";
-      const numImpostors =
-      impostorMode === "one"
+  const roomCode = socket.data.roomCode;
+  const room = rooms[roomCode];
+  if (!room) return;
+  if (socket.id !== room.hostId) return;
+  const players = room.players;
+  if (players.length < 2) {
+    socket.emit("error", "At least 2 players required to start the round.");
+    return;
+  }
+
+  const impostorMode = room.settings.impostorMode || "variable";
+  const numImpostors = impostorMode === "one"
     ? 1
     : Math.floor(Math.random() * players.length);
 
+  const { normalPrompt, impostorPrompts } = generatePromptForRound(numImpostors);
 
-        const roles = [
-        Array(players.length - numImpostors).fill("normal"),
-      Array(numImpostors).fill("impostor")
-      ];
-    shuffleArray(roles);
+  if (impostorMode === "one") {
+    const impostorIndex = Math.floor(Math.random() * players.length);
+    const impostorId = players[impostorIndex].id;
 
-    // Request OpenAI to generate prompt set eventually
-    //for now, use static placeholder
-      const { normalPrompt, impostorPrompts } = generatePromptForRound(numImpostors);
+    players.forEach((player) => {
+      const role = player.id === impostorId ? "impostor" : "normal";
+      const prompt = role === "impostor"
+        ? impostorPrompts.pop() || normalPrompt
+        : normalPrompt;
+      io.of("/impostor").to(player.id).emit("prompt", { prompt });
+    });
+
+    return; // end early so it doesn’t fall through to variable logic
+  }
+
+  // For "variable" mode
+  const roles = [
+    ...Array(players.length - numImpostors).fill("normal"),
+    ...Array(numImpostors).fill("impostor")
+  ];
+  shuffleArray(roles);
 
   players.forEach((player, index) => {
     const role = roles[index];
-    const prompt = role === "normal"
-      ? normalPrompt
-      : impostorPrompts.pop() || normalPrompt;
-
-    io.of("/impostor").to(player.id).emit("prompt", {
-      prompt // role hidden
-    });
+    const prompt = role === "impostor"
+      ? impostorPrompts.pop() || normalPrompt
+      : normalPrompt;
+    io.of("/impostor").to(player.id).emit("prompt", { prompt });
   });
+});
+
 
 socket.on("disconnect", () => {
     const roomCode = socket.data.roomCode;
@@ -166,7 +178,6 @@ socket.on("disconnect", () => {
 
 });
 
-});
 }
 
 
