@@ -1,35 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
   <title>Game Lobby</title>
   <style>
-    body {
-      font-family: sans-serif;
-      text-align: center;
-      margin-top: 60px;
-    }
-    #promptDisplay {
-      margin-top: 40px;
-      font-size: 20px;
-      font-weight: bold;
-    }
-    #hostControls {
-      margin-top: 30px;
-    }
-    input, button {
-      padding: 10px;
-      font-size: 16px;
-      margin: 5px;
-    }
+    body { font-family: sans-serif; text-align: center; margin-top: 60px; }
+    #hostControls { margin-top: 30px; display: none; }
+    #promptDisplay { margin-top: 30px; font-size: 20px; font-weight: bold; }
   </style>
 </head>
 <body>
   <h1>🕵️ Game Lobby</h1>
-
   <p id="roomInfo"></p>
 
-  <div id="hostControls" style="display: none;">
+  <div id="hostControls">
     <button onclick="startRound()">▶️ Start Round</button>
   </div>
 
@@ -39,41 +22,33 @@
   <script>
     const socket = io("/impostor");
 
-    const playerName = localStorage.getItem("playerName");
+    const name = localStorage.getItem("playerName");
     const roomCode = localStorage.getItem("roomCode");
 
-    if (!playerName || !roomCode) {
-      alert("Missing player info. Please go back to the homepage.");
-      window.location.href = "index.html";
+    if (!name || !roomCode) {
+      alert("Missing player info. Go back and re-enter.");
+      location.href = "index.html";
     }
 
     document.getElementById("roomInfo").innerText =
-      `Welcome, ${playerName}! Room Code: ${roomCode}`;
+      `Welcome ${name} — Room Code: ${roomCode}`;
 
-    // Tell server we want to rejoin this room (in case of reload)
-    socket.emit("rejoin-room", { playerName, roomCode });
+    // Rejoin logic (triggers host check server-side)
+    socket.emit("rejoin-room", { playerName: name, roomCode });
 
-    
-
-socket.on("host-assigned", ({ message }) => {
-  console.log(message);
-  document.getElementById("hostControls").style.display = "block";
-});
-
-
-
-
-    // Show prompt when the round starts
     socket.on("prompt", ({ prompt }) => {
       document.getElementById("promptDisplay").innerText = `Your prompt: ${prompt}`;
     });
 
-    // Handle joining confirmation
-    socket.on("joined-room", () => {
-      console.log(`Joined room ${roomCode}`);
+    socket.on("host-assigned", ({ message }) => {
+      document.getElementById("hostControls").style.display = "block";
+      console.log(message);
     });
 
-    // Handle errors from server
+    socket.on("joined-room", () => {
+      console.log("Joined room successfully.");
+    });
+
     socket.on("error", (msg) => {
       alert("❌ " + msg);
     });
