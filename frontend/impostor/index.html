@@ -70,6 +70,11 @@
       if (!playerName || !roomCode) return alert("Fill in both fields.");
       socket.emit("join", { playerName, roomCode });
     }
+    function updatePlayerList(players) {
+  const list = players.map(p => `• ${p.name}`).join("<br>");
+  document.getElementById("playerList").innerHTML = `<strong>Players:</strong><br>${list}`;
+}
+
 
     function startRound() {
       socket.emit("start-round");
@@ -82,15 +87,19 @@
       }
     });
 
-    socket.on("room-created", ({ roomCode: code }) => {
+    socket.on("room-created", ({ roomCode: code,players }) => {
       roomCode = code;
       document.getElementById("roomInfo").innerText = `Room: ${roomCode} | You: ${playerName}`;
+    updatePlayerList(players);
+
       showScreen("lobbyScreen");
     });
 
-    socket.on("joined-room", ({ roomCode: code }) => {
+    socket.on("joined-room", ({ roomCode: code,players }) => {
       roomCode = code;
       document.getElementById("roomInfo").innerText = `Room: ${roomCode} | You: ${playerName}`;
+      updatePlayerList(players);
+
       showScreen("lobbyScreen");
     });
 
@@ -102,7 +111,11 @@
     socket.on("prompt", ({ prompt }) => {
       document.getElementById("promptBox").innerText = `Your prompt:\n${prompt}`;
     });
-    
+    socket.on("update-players", (players) => {
+  const list = players.map(p => `• ${p.name}`).join("<br>");
+  document.getElementById("playerList").innerHTML = `<strong>Players:</strong><br>${list}`;
+});
+
 
     socket.on("error", (msg) => alert("❌ " + msg));
     
