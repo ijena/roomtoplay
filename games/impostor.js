@@ -35,8 +35,13 @@ module.exports = function registerImpostorGame(io){
   socket.join(roomCode);
   socket.data.roomCode = roomCode;
   socket.data.playerName = playerName;
-  socket.emit("room-created", { roomCode });
+
+  socket.emit("room-created", { roomCode, isHost: true });
+
+  // Also emit host-assigned immediately
+  socket.emit("host-assigned", { message: `You are the host of room ${roomCode}` });
 });
+
 
 socket.on("join", ({ playerName, roomCode }) => {
   const room = rooms[roomCode];
