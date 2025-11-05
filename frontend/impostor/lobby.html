@@ -61,9 +61,12 @@
     });
 
     // Also show start button if you just created the room
-    socket.on("room-created", () => {
-      document.getElementById("hostControls").style.display = "block";
-    });
+    socket.on("room-created", ({ roomCode, isHost }) => {
+    if (isHost) {
+    document.getElementById("hostControls").style.display = "block";
+  }
+});
+
 
     // Show prompt when the round starts
     socket.on("prompt", ({ prompt }) => {
