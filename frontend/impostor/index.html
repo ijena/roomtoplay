@@ -50,6 +50,8 @@
   </select>
   <br>
   <button onclick="startRound()">Start Round</button>
+  <button onclick="skipPrompt()">Skip Question</button>
+
 </div>
 
     <div id="promptBox"></div>
@@ -97,6 +99,10 @@ function updateCurrentSettings(settings) {
   document.getElementById("currentSettings").innerHTML = `<em>Impostor Mode: ${modeText}</em>`;
   document.getElementById("impostorModeSelect").value = settings.impostorMode;
 }
+function skipPrompt() {
+  socket.emit("start-round");
+}
+
 
 
     // Reconnect support
