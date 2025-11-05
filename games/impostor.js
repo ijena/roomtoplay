@@ -120,6 +120,29 @@ socket.on("disconnect", () => {
 
 });
 
+socket.on("rejoin-room", ({ playerName, roomCode }) => {
+  const room = rooms[roomCode];
+  if (!room) return socket.emit("error", "Room not found");
+
+  const existingPlayer = room.players.find(p => p.name === playerName);
+  if (!existingPlayer) return socket.emit("error", "Name not found in room");
+
+  // Re-assign socket ID to rejoining player
+  existingPlayer.id = socket.id;
+  socket.join(roomCode);
+  socket.data.roomCode = roomCode;
+  socket.data.playerName = playerName;
+
+  // ✅ Emit host-assigned if this player is the host
+  if (socket.id === room.hostId) {
+    socket.emit("host-assigned", {
+      message: `You are the host of room ${roomCode}`
+    });
+  }
+
+  socket.emit("joined-room", { roomCode });
+});
+
 });
 });
 }
