@@ -63,7 +63,7 @@ socket.on("join", ({ playerName, roomCode }) => {
     const room = rooms[roomCode];
     if (!room) return;
     if (socket.id !== room.hostId) return;
-    if(room.players.length < 3) {
+    if(room.players.length < 2) {
       socket.emit("error", "At least 3 players required to start the round.");
       return;
     }
