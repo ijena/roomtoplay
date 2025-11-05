@@ -26,26 +26,26 @@ module.exports = function registerImpostorGame(io){
   namespace.on("connection", (socket) => {
     console.log(`🎮 Player connected: ${socket.id}`);
   //creating a new room
-  socket.on("create-room", ({ playerName }) => {
+  ssocket.on("create-room", ({ playerName }) => {
   const roomCode = generateRoomCode();
   rooms[roomCode] = {
     hostId: socket.id,
     players: [{ id: socket.id, name: playerName }]
   };
+
+  const room = rooms[roomCode];
+
   socket.join(roomCode);
   socket.data.roomCode = roomCode;
   socket.data.playerName = playerName;
 
   socket.emit("room-created", { roomCode, isHost: true });
-  io.of("/impostor").to(roomCode).emit("update-players", room.players);
-
-  
-
-  // Also emit host-assigned immediately
   socket.emit("host-assigned", { message: `You are the host of room ${roomCode}` });
-  console.log(`✅ Room created: ${roomCode} | Host: ${playerName}`);
 
+  io.of("/impostor").to(roomCode).emit("update-players", room.players);
+  console.log(`✅ Room created: ${roomCode} | Host: ${playerName}`);
 });
+
 
 
 socket.on("join", ({ playerName, roomCode }) => {
