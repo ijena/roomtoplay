@@ -74,11 +74,6 @@
     function startRound() {
       socket.emit("start-round");
     }
-    function updatePlayerList(players) {
-  const list = players.map(p => `• ${p.name}`).join("<br>");
-  document.getElementById("playerList").innerHTML = `<strong>Players:</strong><br>${list}`;
-}
-
 
     // Reconnect support
     socket.on("connect", () => {
@@ -90,14 +85,12 @@
     socket.on("room-created", ({ roomCode: code }) => {
       roomCode = code;
       document.getElementById("roomInfo").innerText = `Room: ${roomCode} | You: ${playerName}`;
-      updatePlayerList(players);
       showScreen("lobbyScreen");
     });
 
     socket.on("joined-room", ({ roomCode: code }) => {
       roomCode = code;
       document.getElementById("roomInfo").innerText = `Room: ${roomCode} | You: ${playerName}`;
-      updatePlayerList(players);
       showScreen("lobbyScreen");
     });
 
@@ -109,10 +102,7 @@
     socket.on("prompt", ({ prompt }) => {
       document.getElementById("promptBox").innerText = `Your prompt:\n${prompt}`;
     });
-    socket.on("update-players", (players) => {
-  updatePlayerList(players);
-});
-
+    
 
     socket.on("error", (msg) => alert("❌ " + msg));
     
