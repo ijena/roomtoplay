@@ -56,6 +56,13 @@
 
     <div id="promptBox"></div>
   </div>
+  <div id="answerSection" style="margin-top: 20px; display: none;">
+  <input type="text" id="answerInput" placeholder="Type your answer..." />
+  <button onclick="submitAnswer()">Submit Answer</button>
+</div>
+
+<div id="answersReveal" style="margin-top: 30px;"></div>
+
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
@@ -102,6 +109,13 @@ function updateCurrentSettings(settings) {
 function skipPrompt() {
   socket.emit("start-round");
 }
+function submitAnswer() {
+  const answer = document.getElementById("answerInput").value.trim();
+  if (!answer) return alert("Enter an answer first.");
+  socket.emit("submit-answer", { answer });
+  document.getElementById("answerInput").disabled = true;
+}
+
 
 
 
@@ -134,8 +148,13 @@ function skipPrompt() {
     });
 
     socket.on("prompt", ({ prompt }) => {
-      document.getElementById("promptBox").innerText = `Your prompt:\n${prompt}`;
-    });
+  document.getElementById("promptBox").innerText = `Your prompt:\n${prompt}`;
+  document.getElementById("answerSection").style.display = "block";
+  document.getElementById("answerInput").value = "";
+  document.getElementById("answerInput").disabled = false;
+  document.getElementById("answersReveal").innerHTML = "";
+});
+
     socket.on("update-players", (players) => {
   const list = players.map(p => `• ${p.name}`).join("<br>");
   document.getElementById("playerList").innerHTML = `<strong>Players:</strong><br>${list}`;
@@ -143,6 +162,16 @@ function skipPrompt() {
     socket.on("settings-updated", (settings) => {
   updateCurrentSettings(settings);
 });
+
+socket.on("reveal-answers", (allAnswers) => {
+  let html = "<h3>Everyone's Answers:</h3><ul>";
+  for (const { name, answer } of allAnswers) {
+    html += `<li><strong>${name}:</strong> ${answer}</li>`;
+  }
+  html += "</ul>";
+  document.getElementById("answersReveal").innerHTML = html;
+});
+
 
 
     socket.on("error", (msg) => alert("❌ " + msg));

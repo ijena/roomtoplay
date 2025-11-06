@@ -28,13 +28,14 @@ module.exports = function registerImpostorGame(io){
   //creating a new room
   socket.on("create-room", ({ playerName }) => {
   const roomCode = generateRoomCode();
-  rooms[roomCode] = {
+ rooms[roomCode] = {
   hostId: socket.id,
   players: [{ id: socket.id, name: playerName }],
-  settings: {
-    impostorMode: "variable" // default
-  }
+  settings: { impostorMode: "variable" },
+  answers: {} // 🆕 stores answers submitted by players
 };
+
+});
 
 
   const room = rooms[roomCode];
@@ -100,6 +101,8 @@ socket.on("join", ({ playerName, roomCode }) => {
     socket.emit("error", "At least 2 players required to start the round.");
     return;
   }
+  room.answers = {}; // 🆕 clear previous round's answers
+
 
   const impostorMode = room.settings.impostorMode || "variable";
   const numImpostors = impostorMode === "one"
@@ -172,13 +175,14 @@ socket.on("disconnect", () => {
     console.log(`🧹 Room ${roomCode} deleted (empty)`);
   }
 }
+io.of("/impostor").to(roomCode).emit("update-players", room.players);
 
 });
 
 
-});
+};
 
-}
+
 
 
 // 🔮 Uses OpenAI to generate one normal + N alternate prompts
