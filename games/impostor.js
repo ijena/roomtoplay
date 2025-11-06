@@ -32,7 +32,9 @@ module.exports = function registerImpostorGame(io){
   hostId: socket.id,
   players: [{ id: socket.id, name: playerName }],
   settings: { impostorMode: "variable" },
-  answers: {} // 🆕 stores answers submitted by players
+  answers: {}, // 🆕 stores answers submitted by players
+  votes: {}         // ✅ NEW: Track player votes
+
 };
 
 
@@ -101,6 +103,9 @@ socket.on("join", ({ playerName, roomCode, }) => {
     return;
   }
   room.answers = {}; // 🆕 clear previous round's answers
+  room.answers = {}; // reset previous answers
+room.votes = {};   // ✅ NEW: reset previous votes
+
 
 
   const impostorMode = room.settings.impostorMode || "variable";
@@ -156,6 +161,27 @@ socket.on("submit-answer", ({ answer }) => {
     io.of("/impostor").to(roomCode).emit("reveal-answers", allAnswers);
   }
 });
+socket.on("submit-vote", ({ votes }) => {
+  const roomCode = socket.data.roomCode;
+  const room = rooms[roomCode];
+  if (!room) return;
+
+  room.votes[socket.id] = votes;
+
+  if (Object.keys(room.votes).length === room.players.length) {
+    const allVotes = Object.values(room.votes).flat(); // collect all votes
+    const tally = {};
+
+    allVotes.forEach(name => {
+      tally[name] = (tally[name] || 0) + 1;
+    });
+
+    const sorted = Object.entries(tally).sort((a, b) => b[1] - a[1]);
+
+    namespace.to(roomCode).emit("vote-results", sorted);  // ✅ Send result
+  }
+});
+
 
 
 
@@ -165,6 +191,9 @@ socket.on("disconnect", () => {
     if (!room) return;
 
     room.players = room.players.filter((p) => p.id !== socket.id);
+    delete room.answers[socket.id]; // 🆕 Clear their answer if they leave
+    delete room.votes[socket.id];  // ✅ Clear their vote if they leave
+
     io.of("/impostor").to(roomCode).emit("update-players", room.players);
 
     console.log(`❌ ${socket.data.playerName} left room ${roomCode}`);
@@ -186,8 +215,10 @@ socket.on("disconnect", () => {
 
     console.log(`👑 New host in ${roomCode}: ${newHostName}`);
   } else {
-    // Room is empty — optional: delete it
+    // Room is emp
     delete rooms[roomCode];
+    delete room.votes[socket.id];  // ✅ Clear their vote if they leave
+
     console.log(`🧹 Room ${roomCode} deleted (empty)`);
   }
 }

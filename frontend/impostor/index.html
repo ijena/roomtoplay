@@ -62,6 +62,12 @@
 
 <div id="answersReveal" style="margin-top: 30px;"></div>
 
+<div id="voteSection" style="display: none;">
+  <h3>Vote: Who do you think is the impostor?</h3>
+  <form id="voteForm"></form>
+  <button onclick="submitVote()">Submit Vote</button>
+</div>
+
 </div>
 
   <script src="/socket.io/socket.io.js"></script>
@@ -115,6 +121,37 @@ function submitAnswer() {
   socket.emit("submit-answer", { answer });
   document.getElementById("answerInput").disabled = true;
 }
+function renderVotingForm() {
+  const form = document.getElementById("voteForm");
+  form.innerHTML = ""; // Reset votes every round
+
+  allPlayers.forEach((p) => {
+    if (p.name !== playerName) {
+      const input = document.createElement("input");
+      input.type = impostorMode === "one" ? "radio" : "checkbox";
+      input.name = "vote";
+      input.value = p.name;
+      input.id = `vote-${p.name}`;
+
+      const label = document.createElement("label");
+      label.htmlFor = input.id;
+      label.textContent = p.name;
+
+      form.appendChild(input);
+      form.appendChild(label);
+    }
+  });
+
+  document.getElementById("voteSection").style.display = "block";
+}
+function submitVote() {
+  const form = document.getElementById("voteForm");
+  const votes = Array.from(form.querySelectorAll("input:checked")).map((input) => input.value);
+  if (votes.length === 0) return alert("Please select at least one player.");
+  socket.emit("submit-vote", { votes });
+  document.getElementById("voteSection").style.display = "none";
+}
+
 
 
 
@@ -170,6 +207,8 @@ socket.on("reveal-answers", (allAnswers) => {
   }
   html += "</ul>";
   document.getElementById("answersReveal").innerHTML = html;
+  renderVotingForm(); // Start voting right after answer reveal
+
 });
 
 
