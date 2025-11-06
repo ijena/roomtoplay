@@ -141,6 +141,22 @@ socket.on("join", ({ playerName, roomCode, }) => {
   });
 });
 
+socket.on("submit-answer", ({ answer }) => {
+  const roomCode = socket.data.roomCode;
+  const room = rooms[roomCode];
+  if (!room) return;
+
+  room.answers[socket.id] = {
+    name: socket.data.playerName,
+    answer
+  };
+
+  if (Object.keys(room.answers).length === room.players.length) {
+    const allAnswers = Object.values(room.answers);
+    io.of("/impostor").to(roomCode).emit("reveal-answers", allAnswers);
+  }
+});
+
 
 
 socket.on("disconnect", () => {
