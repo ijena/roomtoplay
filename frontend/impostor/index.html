@@ -94,6 +94,7 @@
       socket.emit("join", { playerName, roomCode });
     }
     function updatePlayerList(players) {
+        allPlayers = players; // Store for voting later
   const list = players.map(p => `• ${p.name}`).join("<br>");
   document.getElementById("playerList").innerHTML = `<strong>Players:</strong><br>${list}`;
 }
@@ -198,6 +199,7 @@ function submitVote() {
 });
     socket.on("settings-updated", (settings) => {
   updateCurrentSettings(settings);
+  impostorMode = settings.impostorMode; // Store for voting logic
 });
 
 socket.on("reveal-answers", (allAnswers) => {
