@@ -35,7 +35,6 @@ module.exports = function registerImpostorGame(io){
   answers: {} // 🆕 stores answers submitted by players
 };
 
-});
 
 
   const room = rooms[roomCode];
@@ -59,7 +58,7 @@ module.exports = function registerImpostorGame(io){
 
 
 
-socket.on("join", ({ playerName, roomCode }) => {
+socket.on("join", ({ playerName, roomCode, }) => {
   const room = rooms[roomCode];
   if (!room) return socket.emit("error", "Room not found");
 
@@ -143,6 +142,7 @@ socket.on("join", ({ playerName, roomCode }) => {
 });
 
 
+
 socket.on("disconnect", () => {
     const roomCode = socket.data.roomCode;
     const room = rooms[roomCode];
@@ -175,10 +175,10 @@ socket.on("disconnect", () => {
     console.log(`🧹 Room ${roomCode} deleted (empty)`);
   }
 }
-io.of("/impostor").to(roomCode).emit("update-players", room.players);
 
 });
 
+});
 
 };
 
