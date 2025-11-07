@@ -158,6 +158,7 @@ socket.on("submit-answer", ({ answer }) => {
 
   if (Object.keys(room.answers).length === room.players.length) {
     const allAnswers = Object.values(room.answers);
+    io.of("/impostor").to(roomCode).emit("update-players", room.players);
     io.of("/impostor").to(roomCode).emit("reveal-answers", allAnswers);
   }
 });

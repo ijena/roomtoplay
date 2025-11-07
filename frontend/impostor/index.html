@@ -75,6 +75,8 @@
     const socket = io("/impostor");
     let playerName = "";
     let roomCode = "";
+    let allPlayers = []; // 🆕 to store players for voting
+    let impostorMode = "variable"; // Default mode
 
     function showScreen(screenId) {
       document.querySelectorAll('.screen').forEach(div => div.classList.remove('active'));
