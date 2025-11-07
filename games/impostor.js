@@ -60,7 +60,7 @@ module.exports = function registerImpostorGame(io){
 
 
 
-socket.on("join", ({ playerName, roomCode, }) => {
+socket.on("join", ({ playerName, roomCode }) => {
   const room = rooms[roomCode];
   if (!room) return socket.emit("error", "Room not found");
 
@@ -68,15 +68,14 @@ socket.on("join", ({ playerName, roomCode, }) => {
   socket.join(roomCode);
   socket.data.roomCode = roomCode;
   socket.data.playerName = playerName;
-  socket.emit("joined-room", {
-  roomCode,
-  players: room.players,
-  settings: room.settings
-});
-  // socket.emit("joined-room", { roomCode });
+
+  // ✅ Send the updated player list to everyone in the room
   io.of("/impostor").to(roomCode).emit("update-players", room.players);
 
+  // Still send joined confirmation to the new player
+  socket.emit("joined-room", { roomCode, players: room.players, settings: room.settings });
 });
+
 
   socket.on("update-settings", (newSettings) => {
   const roomCode = socket.data.roomCode;
