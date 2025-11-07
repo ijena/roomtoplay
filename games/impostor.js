@@ -66,14 +66,20 @@ socket.on("join", ({ playerName, roomCode }) => {
 
   room.players.push({ id: socket.id, name: playerName });
   socket.join(roomCode);
+
+  // Ensure join completes before broadcasting
+  setTimeout(() => {
+    io.of("/impostor").to(roomCode).emit("update-players", room.players);
+  }, 50); // small delay (~50ms) ensures join propagation
+
   socket.data.roomCode = roomCode;
   socket.data.playerName = playerName;
 
-  // ✅ Send the updated player list to everyone in the room
-  io.of("/impostor").to(roomCode).emit("update-players", room.players);
-
-  // Still send joined confirmation to the new player
-  socket.emit("joined-room", { roomCode, players: room.players, settings: room.settings });
+  socket.emit("joined-room", {
+    roomCode,
+    players: room.players,
+    settings: room.settings
+  });
 });
 
 
