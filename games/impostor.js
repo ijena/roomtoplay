@@ -60,28 +60,23 @@ module.exports = function registerImpostorGame(io){
 
 
 
-socket.on("join", ({ playerName, roomCode }) => {
+socket.on("join", ({ playerName, roomCode, }) => {
   const room = rooms[roomCode];
   if (!room) return socket.emit("error", "Room not found");
 
   room.players.push({ id: socket.id, name: playerName });
   socket.join(roomCode);
-
-  // Ensure join completes before broadcasting
-  setTimeout(() => {
-    io.of("/impostor").to(roomCode).emit("update-players", room.players);
-  }, 50); // small delay (~50ms) ensures join propagation
-
   socket.data.roomCode = roomCode;
   socket.data.playerName = playerName;
-
   socket.emit("joined-room", {
-    roomCode,
-    players: room.players,
-    settings: room.settings
-  });
+  roomCode,
+  players: room.players,
+  settings: room.settings
 });
+  // socket.emit("joined-room", { roomCode });
+  io.of("/impostor").to(roomCode).emit("update-players", room.players);
 
+});
 
   socket.on("update-settings", (newSettings) => {
   const roomCode = socket.data.roomCode;
@@ -107,6 +102,8 @@ socket.on("join", ({ playerName, roomCode }) => {
     socket.emit("error", "At least 2 players required to start the round.");
     return;
   }
+  io.of("/impostor").to(roomCode).emit("update-players", room.players);
+
   room.answers = {}; // 🆕 clear previous round's answers
   room.answers = {}; // reset previous answers
 room.votes = {};   // ✅ NEW: reset previous votes

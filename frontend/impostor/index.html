@@ -195,10 +195,12 @@ function submitVote() {
   document.getElementById("answersReveal").innerHTML = "";
 });
 
-    socket.on("update-players", (players) => {
+   socket.on("update-players", (players) => {
+  allPlayers = players; // ✅ Make sure everyone’s copy of allPlayers stays synced
   const list = players.map(p => `• ${p.name}`).join("<br>");
   document.getElementById("playerList").innerHTML = `<strong>Players:</strong><br>${list}`;
 });
+
     socket.on("settings-updated", (settings) => {
   updateCurrentSettings(settings);
   impostorMode = settings.impostorMode; // Store for voting logic
