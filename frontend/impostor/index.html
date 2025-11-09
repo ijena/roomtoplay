@@ -220,35 +220,32 @@ socket.on("reveal-answers", (allAnswers) => {
 });
 
 socket.on("vote-results", ({ tally, byPlayer }) => {
+  console.log("✅ vote-results:", { tally, byPlayer });
   let html = "<h3>Vote Results:</h3><ul>";
 
-  // 🧮 Display the total tally of votes
   tally.forEach(([name, count]) => {
     const votesText = count === 1 ? "vote" : "votes";
-    const displayName = (name === "__NONE__" || name ==="None") ? "No one" : name;
-
+    // ✅ Convert "__NONE__" into readable label
+    const displayName = (name === "__NONE__" || name === "None") ? "No one" : name;
     html += `<li><strong>${displayName}</strong>: ${count} ${votesText}</li>`;
   });
   html += "</ul>";
 
-  // 👥 Show who voted for whom (using player names)
   html += "<h4>Who Voted for Whom:</h4><ul>";
-
   for (const [voterId, votedNames] of Object.entries(byPlayer)) {
     const voter = allPlayers.find(p => p.id === voterId);
     const voterName = voter ? voter.name : "Unknown Player";
-    const votedDisplay = votedNames.map(n => (n === "__NONE__" ? "No one" : n)).join(", ");
-
+    const votedDisplay = votedNames
+      .map(n => (n === "__NONE__" ? "No one" : n))
+      .join(", ");
     html += `<li><strong>${voterName}</strong> → ${votedDisplay}</li>`;
   }
-
   html += "</ul>";
 
   document.getElementById("answersReveal").innerHTML += html;
-
-  // Hide vote UI once results appear
   document.getElementById("voteSection").style.display = "none";
 });
+
 
 
 

@@ -170,36 +170,36 @@ socket.on("submit-vote", ({ votes }) => {
   const room = rooms[roomCode];
   if (!room) return;
 
-  // 🗳️ Record this player's votes (empty array if none)
-  room.votes[socket.id] = Array.isArray(votes) ? votes : ["None"];
+  // ✅ Always record a vote — if empty, treat it as "None"
+  const selectedVotes =
+    Array.isArray(votes) && votes.length > 0 ? votes : ["__NONE__"];
 
-  console.log(`🗳️ ${socket.data.playerName} voted for:`, room.votes[socket.id]);
+  room.votes[socket.id] = selectedVotes;
 
-  // ✅ Once everyone has voted, tally and broadcast results
+  console.log(`🗳️ ${socket.data.playerName} voted for:`, selectedVotes);
+
+  // ✅ When everyone has voted
   if (Object.keys(room.votes).length === room.players.length) {
     const allVotes = Object.values(room.votes).flat();
     const tally = {};
 
-    // Count how many votes each player received
+    // ✅ Count every vote, including "__NONE__"
     allVotes.forEach(name => {
       tally[name] = (tally[name] || 0) + 1;
     });
 
-    // Sort players by most votes
     const sorted = Object.entries(tally).sort((a, b) => b[1] - a[1]);
 
-    // ✅ Broadcast both the tally and who voted for whom
+    // ✅ Send both tally + individual votes
     namespace.to(roomCode).emit("vote-results", {
-      tally: sorted,       // e.g., [["Alice", 2], ["Bob", 1]]
-      byPlayer: room.votes // e.g., { "<socketId>": ["Alice"], ... }
+      tally: sorted,
+      byPlayer: room.votes,
     });
 
-    console.log(`📊 Vote Results for room ${roomCode}:`, { tally: sorted, byPlayer: room.votes });
-
-    // Optional: reset votes for next round
-    // room.votes = {};
+    console.log(`📊 Vote results for ${roomCode}:`, { tally: sorted, byPlayer: room.votes });
   }
 });
+
 
 
 
