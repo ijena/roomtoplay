@@ -219,7 +219,7 @@ socket.on("reveal-answers", (allAnswers) => {
 
 });
 
-socket.on("vote-results", ({ tally, byPlayer }) => {
+socket.on("vote-results", ({ tally, byPlayer, impostors }) => {
   console.log("✅ vote-results:", { tally, byPlayer });
   let html = "<h3>Vote Results:</h3><ul>";
 
