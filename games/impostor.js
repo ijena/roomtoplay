@@ -164,26 +164,44 @@ socket.on("submit-answer", ({ answer }) => {
     io.of("/impostor").to(roomCode).emit("reveal-answers", allAnswers);
   }
 });
+// Inside the namespace connection handler:
 socket.on("submit-vote", ({ votes }) => {
   const roomCode = socket.data.roomCode;
   const room = rooms[roomCode];
   if (!room) return;
 
-  room.votes[socket.id] = votes;
+  // 🗳️ Record this player's votes (empty array if none)
+  room.votes[socket.id] = Array.isArray(votes) ? votes : [];
 
+  console.log(`🗳️ ${socket.data.playerName} voted for:`, room.votes[socket.id]);
+
+  // ✅ Once everyone has voted, tally and broadcast results
   if (Object.keys(room.votes).length === room.players.length) {
-    const allVotes = Object.values(room.votes).flat(); // collect all votes
+    const allVotes = Object.values(room.votes).flat();
     const tally = {};
 
+    // Count how many votes each player received
     allVotes.forEach(name => {
       tally[name] = (tally[name] || 0) + 1;
     });
 
+    // Sort players by most votes
     const sorted = Object.entries(tally).sort((a, b) => b[1] - a[1]);
 
-    namespace.to(roomCode).emit("vote-results", sorted);  // ✅ Send result
+    // ✅ Broadcast both the tally and who voted for whom
+    namespace.to(roomCode).emit("vote-results", {
+      tally: sorted,       // e.g., [["Alice", 2], ["Bob", 1]]
+      byPlayer: room.votes // e.g., { "<socketId>": ["Alice"], ... }
+    });
+
+    console.log(`📊 Vote Results for room ${roomCode}:`, { tally: sorted, byPlayer: room.votes });
+
+    // Optional: reset votes for next round
+    // room.votes = {};
   }
 });
+
+
 
 
 
