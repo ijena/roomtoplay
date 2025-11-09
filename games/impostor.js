@@ -188,7 +188,50 @@ socket.on("submit-vote", ({ votes }) => {
       tally[name] = (tally[name] || 0) + 1;
     });
 
-    const sorted = Object.entries(tally).sort((a, b) => b[1] - a[1]);
+// After sorting tally by most votes
+const sorted = Object.entries(tally).sort((a, b) => b[1] - a[1]);
+
+// 🧮 Find all top scorers (potential impostors)
+const highestVotes = sorted[0] ? sorted[0][1] : 0;
+let topVoted = sorted.filter(([name, count]) => count === highestVotes).map(([name]) => name);
+
+// ✅ Get impostorMode for this room
+const impostorMode = room.settings?.impostorMode || "variable";
+
+let impostors = [];
+
+// 🎯 One Impostor Mode: Randomly pick one among top tied names
+if (impostorMode === "one") {
+  if (topVoted.includes("__NONE__")) {
+    // If only "__NONE__" tied, ignore it
+    topVoted = topVoted.filter(n => n !== "__NONE__");
+  }
+  if (topVoted.length > 0) {
+    const randomIndex = Math.floor(Math.random() * topVoted.length);
+    impostors = [topVoted[randomIndex]];
+  } else {
+    impostors = [];
+  }
+}
+
+// 🎯 Variable Impostors Mode: All top-voted players, ignoring "__NONE__"
+else {
+  impostors = topVoted.filter(name => name !== "__NONE__");
+}
+
+// ✅ Broadcast results + impostors
+namespace.to(roomCode).emit("vote-results", {
+  tally: sorted,
+  byPlayer: room.votes,
+  impostors
+});
+
+console.log(`📊 Final results for ${roomCode}:`, {
+  impostorMode,
+  tally: sorted,
+  topVoted,
+  impostors
+});
 
     // ✅ Send both tally + individual votes
     namespace.to(roomCode).emit("vote-results", {

@@ -242,7 +242,17 @@ socket.on("vote-results", ({ tally, byPlayer }) => {
   }
   html += "</ul>";
 
-  document.getElementById("answersReveal").innerHTML += html;
+if (impostors && impostors.length > 0) {
+  const displayNames = impostors.map(name => (name === "__NONE__" ? "No one" : name)).join(", ");
+  document.getElementById("answersReveal").innerHTML += `
+    <h3>🚨 Impostor${impostors.length > 1 ? "s" : ""} Revealed:</h3>
+    <p><strong>${displayNames}</strong></p>
+  `;
+} else {
+  document.getElementById("answersReveal").innerHTML += `
+    <h3>😶 No impostor identified this round!</h3>
+  `;
+}
   document.getElementById("voteSection").style.display = "none";
 });
 
