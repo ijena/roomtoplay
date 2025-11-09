@@ -150,7 +150,7 @@ function renderVotingForm() {
 function submitVote() {
   const form = document.getElementById("voteForm");
   const votes = Array.from(form.querySelectorAll("input:checked")).map((input) => input.value);
-  if (votes.length === 0) return alert("Please select at least one player.");
+  if (votes.length === 0 && impostorMode=="one") return alert("Please select at least one player.");
   socket.emit("submit-vote", { votes });
   document.getElementById("voteSection").style.display = "none";
 }
