@@ -171,7 +171,7 @@ socket.on("submit-vote", ({ votes }) => {
   if (!room) return;
 
   // 🗳️ Record this player's votes (empty array if none)
-  room.votes[socket.id] = Array.isArray(votes) ? votes : [];
+  room.votes[socket.id] = Array.isArray(votes) ? votes : ["None"];
 
   console.log(`🗳️ ${socket.data.playerName} voted for:`, room.votes[socket.id]);
 
