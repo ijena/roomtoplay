@@ -241,18 +241,15 @@ socket.on("vote-results", ({ tally, byPlayer }) => {
     html += `<li><strong>${voterName}</strong> → ${votedDisplay}</li>`;
   }
   html += "</ul>";
+   if (impostors && impostors.length > 0) {
+        const displayNames = impostors.map(name => (name === "__NONE__" ? "No one" : name)).join(", ");
+        html += `<h3>🚨 Impostor${impostors.length > 1 ? "s" : ""} Revealed:</h3>
+                 <p><strong>${displayNames}</strong></p>`;
+      } else {
+        html += `<h3>😶 No impostor identified this round!</h3>`;
+      }
 
-if (impostors && impostors.length > 0) {
-  const displayNames = impostors.map(name => (name === "__NONE__" ? "No one" : name)).join(", ");
-  document.getElementById("answersReveal").innerHTML += `
-    <h3>🚨 Impostor${impostors.length > 1 ? "s" : ""} Revealed:</h3>
-    <p><strong>${displayNames}</strong></p>
-  `;
-} else {
-  document.getElementById("answersReveal").innerHTML += `
-    <h3>😶 No impostor identified this round!</h3>
-  `;
-}
+  document.getElementById("answersReveal").innerHTML += html;
   document.getElementById("voteSection").style.display = "none";
 });
 
