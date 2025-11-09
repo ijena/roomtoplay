@@ -98,8 +98,8 @@ socket.on("join", ({ playerName, roomCode, }) => {
   if (!room) return;
   if (socket.id !== room.hostId) return;
   const players = room.players;
-  if (players.length < 2) {
-    socket.emit("error", "At least 2 players required to start the round.");
+  if (players.length < 3) {
+    socket.emit("error", "At least 3 players required to start the round.");
     return;
   }
   io.of("/impostor").to(roomCode).emit("update-players", room.players);
