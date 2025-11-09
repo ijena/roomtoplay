@@ -225,7 +225,9 @@ socket.on("vote-results", ({ tally, byPlayer }) => {
   // 🧮 Display the total tally of votes
   tally.forEach(([name, count]) => {
     const votesText = count === 1 ? "vote" : "votes";
-    html += `<li><strong>${name}</strong>: ${count} ${votesText}</li>`;
+    const displayName = (name === "None") ? "No one" : name;
+
+    html += `<li><strong>${displayName}</strong>: ${count} ${votesText}</li>`;
   });
   html += "</ul>";
 
