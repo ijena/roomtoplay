@@ -111,6 +111,8 @@
 }
 
 function updateCurrentSettings(settings) {
+  impostorMode = settings.impostorMode; // ✅ Keeps local copy in sync
+
   const modeText = settings.impostorMode === "one" ? "One Impostor" : "Variable Impostors";
   document.getElementById("currentSettings").innerHTML = `<em>Impostor Mode: ${modeText}</em>`;
   document.getElementById("impostorModeSelect").value = settings.impostorMode;
