@@ -170,76 +170,65 @@ socket.on("submit-vote", ({ votes }) => {
   const room = rooms[roomCode];
   if (!room) return;
 
-  // ✅ Always record a vote — if empty, treat it as "None"
-  const selectedVotes =
-    Array.isArray(votes) && votes.length > 0 ? votes : ["__NONE__"];
-
+  // 🗳️ Record votes — even if empty, store "__NONE__"
+  const selectedVotes = Array.isArray(votes) && votes.length > 0 ? votes : ["__NONE__"];
   room.votes[socket.id] = selectedVotes;
 
   console.log(`🗳️ ${socket.data.playerName} voted for:`, selectedVotes);
 
-  // ✅ When everyone has voted
+  // ✅ Wait for all players to vote
   if (Object.keys(room.votes).length === room.players.length) {
     const allVotes = Object.values(room.votes).flat();
     const tally = {};
 
-    // ✅ Count every vote, including "__NONE__"
+    // Count all votes (including "__NONE__")
     allVotes.forEach(name => {
       tally[name] = (tally[name] || 0) + 1;
     });
 
-// After sorting tally by most votes
-const sorted = Object.entries(tally).sort((a, b) => b[1] - a[1]);
+    // Sort players by votes (highest → lowest)
+    const sorted = Object.entries(tally).sort((a, b) => b[1] - a[1]);
 
-// 🧮 Find all top scorers (potential impostors)
-const highestVotes = sorted[0] ? sorted[0][1] : 0;
-let topVoted = sorted.filter(([name, count]) => count === highestVotes).map(([name]) => name);
+    // Identify top-voted players
+    const highestVotes = sorted[0] ? sorted[0][1] : 0;
+    let topVoted = sorted
+      .filter(([name, count]) => count === highestVotes)
+      .map(([name]) => name);
 
-// ✅ Get impostorMode for this room
-const impostorMode = room.settings?.impostorMode || "variable";
+    // Retrieve impostor mode for logic
+    const impostorMode = room.settings?.impostorMode || "variable";
+    let impostors = [];
 
-let impostors = [];
+    // 🎯 ONE IMPOSTOR MODE: randomly select one from the top tied players
+    if (impostorMode === "one") {
+      topVoted = topVoted.filter(n => n !== "__NONE__");
+      if (topVoted.length > 0) {
+        const randomIndex = Math.floor(Math.random() * topVoted.length);
+        impostors = [topVoted[randomIndex]];
+      }
+    }
 
-// 🎯 One Impostor Mode: Randomly pick one among top tied names
-if (impostorMode === "one") {
-  if (topVoted.includes("__NONE__")) {
-    // If only "__NONE__" tied, ignore it
-    topVoted = topVoted.filter(n => n !== "__NONE__");
-  }
-  if (topVoted.length > 0) {
-    const randomIndex = Math.floor(Math.random() * topVoted.length);
-    impostors = [topVoted[randomIndex]];
-  } else {
-    impostors = [];
-  }
-}
+    // 🎯 VARIABLE IMPOSTORS MODE: all tied top-voted players are impostors (ignore "__NONE__")
+    else {
+      impostors = topVoted.filter(name => name !== "__NONE__");
+    }
 
-// 🎯 Variable Impostors Mode: All top-voted players, ignoring "__NONE__"
-else {
-  impostors = topVoted.filter(name => name !== "__NONE__");
-}
+    console.log(`📊 Final vote results for ${roomCode}:`, {
+      impostorMode,
+      tally: sorted,
+      topVoted,
+      impostors
+    });
 
-// ✅ Broadcast results + impostors
-namespace.to(roomCode).emit("vote-results", {
-  tally: sorted,
-  byPlayer: room.votes,
-  impostors
-});
-
-console.log(`📊 Final results for ${roomCode}:`, {
-  impostorMode,
-  tally: sorted,
-  topVoted,
-  impostors
-});
-
-    // ✅ Send both tally + individual votes
+    // ✅ Send results to all players
     namespace.to(roomCode).emit("vote-results", {
       tally: sorted,
       byPlayer: room.votes,
+      impostors
     });
 
-    console.log(`📊 Vote results for ${roomCode}:`, { tally: sorted, byPlayer: room.votes });
+    // Optional: reset for next round
+    // room.votes = {};
   }
 });
 
