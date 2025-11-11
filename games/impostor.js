@@ -226,6 +226,64 @@ socket.on("submit-vote", ({ votes }) => {
       byPlayer: room.votes,
       impostors
     });
+    // 🧮 Scoring System Implementation
+if (!room.scores) room.scores = {};
+// const impostorMode = room.settings?.impostorMode || "variable";
+
+// Determine which players are impostors by name
+const impostorNames = impostors || [];
+
+// Build player role mapping for clarity
+const playerRoles = {};
+room.players.forEach(p => {
+  playerRoles[p.name] = impostorNames.includes(p.name) ? "impostor" : "normal";
+});
+
+// Compute scores
+room.players.forEach(player => {
+  const pid = player.id;
+  const pname = player.name;
+  const role = playerRoles[pname];
+  const votes = room.votes[pid] || [];
+
+  let roundScore = 0;
+
+  // SINGLE IMPOSTOR MODE
+  if (impostorMode === "one") {
+    if (role === "impostor") {
+      // Impostor only gets points if not caught
+      const caught = impostorNames.includes(pname);
+      roundScore = caught ? 0 : 2;
+    } else {
+      // Normal player
+      const votedForImpostor = votes.some(v => impostorNames.includes(v));
+      roundScore = votedForImpostor ? 1 : 0;
+    }
+  }
+
+  // VARIABLE IMPOSTORS MODE
+  else {
+    // Impostors get +2 for surviving, 0 if caught
+    if (role === "impostor") {
+      const caught = impostorNames.includes(pname);
+      if (!caught) roundScore += 2;
+    }
+
+    // For all players (impostor or not):
+    votes.forEach(v => {
+      if (impostorNames.includes(v)) roundScore += 1;  // voted for impostor
+      else if (playerRoles[v] === "normal") roundScore -= 1; // voted for non-impostor
+    });
+  }
+
+  // Update cumulative score
+  room.scores[pid] = (room.scores[pid] || 0) + roundScore;
+});
+
+// ✅ Broadcast updated scores
+namespace.to(roomCode).emit("score-update", room.scores);
+
+console.log(`🏆 Scores after round in ${roomCode}:`, room.scores);
 
     // Optional: reset for next round
     // room.votes = {};

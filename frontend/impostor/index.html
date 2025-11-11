@@ -253,6 +253,17 @@ socket.on("vote-results", ({ tally, byPlayer, impostors }) => {
   document.getElementById("voteSection").style.display = "none";
 });
 
+socket.on("score-update", (scores) => {
+  let html = "<h3>🏆 Scores</h3><ul>";
+  for (const player of allPlayers) {
+    const score = scores[player.id] || 0;
+    html += `<li>${player.name}: ${score} pts</li>`;
+  }
+  html += "</ul>";
+  document.getElementById("answersReveal").innerHTML += html;
+});
+
+
 
 
 
