@@ -234,26 +234,28 @@ socket.on("submit-vote", ({ votes }) => {
   // 🧮 Scoring System
 if (!room.scores) room.scores = {};
 const impostorMode = room.settings?.impostorMode || "variable";
-const impostorNames = impostors || [];
 
-// Map each player to impostor/normal
+// ✅ get impostor names from last round (stored on room object)
+const impostorNames = room.lastImpostors || [];
+
+// Map player roles
 const playerRoles = {};
 room.players.forEach(p => {
   playerRoles[p.name] = impostorNames.includes(p.name) ? "impostor" : "normal";
 });
 
-// Build a quick vote-count map
+// Build vote counts
 const votesReceived = {};
-Object.values(room.votes).flat().forEach(v => {
+Object.values(room.votes || {}).flat().forEach(v => {
   votesReceived[v] = (votesReceived[v] || 0) + 1;
 });
 
-// Calculate per-player scores
+// Compute scores per player
 room.players.forEach(player => {
   const pid = player.id;
   const pname = player.name;
   const role = playerRoles[pname];
-  const votes = room.votes[pid] || [];
+  const votes = room.votes?.[pid] || [];
   let roundScore = 0;
 
   // ----- SINGLE IMPOSTOR MODE -----
@@ -263,29 +265,27 @@ room.players.forEach(player => {
       const caught = impostorNames.includes(pname);
       roundScore += caught ? 0 : 2;
     } else {
-      // Non-Impostor: +1 if voted for impostor, -1 if got voted
+      // Non-Impostor: +1 if voted impostor, −1 if got voted
       const votedForImpostor = votes.some(v => impostorNames.includes(v));
       if (votedForImpostor) roundScore += 1;
-      if (votesReceived[pname] > 0) roundScore -= 1;
+      if ((votesReceived[pname] || 0) > 0) roundScore -= 1;
     }
   }
 
   // ----- VARIABLE IMPOSTOR MODE -----
   else {
     if (role === "impostor") {
-      // Impostor: +2 if not caught
       const caught = impostorNames.includes(pname);
       if (!caught) roundScore += 2;
     } else {
-      // Non-Impostor: -1 if got voted
-      if (votesReceived[pname] > 0) roundScore -= 1;
+      if ((votesReceived[pname] || 0) > 0) roundScore -= 1;
     }
 
-    // Everyone: +1 per impostor voted correctly
+    // Everyone: +1 per impostor voted
     const correctVotes = votes.filter(v => impostorNames.includes(v)).length;
     roundScore += correctVotes;
 
-    // Clean Ballot: +1 if voted all impostors & no normals
+    // Clean Ballot: voted all impostors, no normals
     const votedNormals = votes.some(v => playerRoles[v] === "normal");
     const missedImpostors = impostorNames.some(i => !votes.includes(i));
     if (!votedNormals && !missedImpostors && votes.length > 0) {
@@ -293,11 +293,12 @@ room.players.forEach(player => {
     }
   }
 
-  // Update total scores
+  // Update cumulative totals
   room.scores[pid] = (room.scores[pid] || 0) + roundScore;
 });
 
-console.log(`🏆 Updated scores for room ${roomCode}:`, room.scores);
+// ✅ Emit updated scoreboard
+console.log(`🏆 Scores for ${roomCode}:`, room.scores);
 namespace.to(roomCode).emit("score-update", room.scores);
 
 });
