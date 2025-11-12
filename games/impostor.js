@@ -257,19 +257,19 @@ room.players.forEach(player => {
   if (impostorMode === "one") {
     if (role === "impostor") {
       // Impostor: +2 if not caught
-      const caught = impostorNames.includes(pname);
+      const caught = impostors.includes(pname);
       roundScore += caught ? 0 : 2;
     } else {
       // Non-Impostor: +1 if voted impostor, −1 if got voted
       const votedForImpostor = votes.some(v => impostorNames.includes(v));
       if (votedForImpostor) roundScore += 1;
-      if (impostorNames.includes(pname)){ roundScore -= 1;}
+      if (impostors.includes(pname)){ roundScore -= 1;}
     }
   }
 
   // ----- VARIABLE IMPOSTOR MODE -----
   else {
-    const caught = impostorNames.includes(pname);
+    const caught = impostors.includes(pname);
 
     if (role === "impostor") {
       if (!caught) roundScore += 2;
