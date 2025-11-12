@@ -243,6 +243,7 @@ const votesReceived = {};
 Object.values(room.votes || {}).flat().forEach(v => {
   votesReceived[v] = (votesReceived[v] || 0) + 1;
 });
+const roundChanges = {};
 
 // Compute scores per player
 room.players.forEach(player => {
@@ -286,20 +287,22 @@ room.players.forEach(player => {
       roundScore += 1;
     }
   }
-
+  roundChanges[pid] = roundScore;
   // Update cumulative totals
   room.scores[pid] = (room.scores[pid] || 0) + roundScore;
 });
 
 // ✅ Emit updated scoreboard
 console.log(`🏆 Scores for ${roomCode}:`, room.scores);
-namespace.to(roomCode).emit("score-update", room.scores);
-
+namespace.to(roomCode).emit("score-update", {
+  totals: room.scores,
+  deltas: roundChanges
+});
     
     // Optional: reset for next round
     // room.votes = {};
   }
-  // 🧮 Scoring System
+
 });
 
 

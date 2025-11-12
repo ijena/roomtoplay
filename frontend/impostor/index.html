@@ -253,15 +253,18 @@ socket.on("vote-results", ({ tally, byPlayer, impostors }) => {
   document.getElementById("answersReveal").innerHTML += html;
   document.getElementById("voteSection").style.display = "none";
 });
-socket.on("score-update", (scores) => {
+socket.on("score-update", ({ totals, deltas }) => {
   let html = "<h3>🏆 Scores</h3><ul>";
   for (const player of allPlayers) {
-    const score = scores[player.id] || 0;
-    html += `<li>${player.name}: ${score} pts</li>`;
+    const total = totals[player.id] || 0;
+    const delta = deltas[player.id] || 0;
+    const sign = delta > 0 ? "+" : (delta < 0 ? "–" : "±0");
+    html += `<li>${player.name}: ${total} pts <span style="color:gray;">(${sign}${Math.abs(delta)})</span></li>`;
   }
   html += "</ul>";
   document.getElementById("scoreBoard").innerHTML = html;
 });
+
 
 
 
