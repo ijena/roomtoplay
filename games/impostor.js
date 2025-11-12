@@ -226,14 +226,8 @@ socket.on("submit-vote", ({ votes }) => {
       byPlayer: room.votes,
       impostors
     });
-
-    
-    // Optional: reset for next round
-    // room.votes = {};
-  }
-  // 🧮 Scoring System
 if (!room.scores) room.scores = {};
-const impostorMode = room.settings?.impostorMode || "variable";
+//const impostorMode = room.settings?.impostorMode || "variable";
 
 // ✅ get impostor names from last round (stored on room object)
 const impostorNames = room.lastImpostors || [];
@@ -301,7 +295,13 @@ room.players.forEach(player => {
 console.log(`🏆 Scores for ${roomCode}:`, room.scores);
 namespace.to(roomCode).emit("score-update", room.scores);
 
+    
+    // Optional: reset for next round
+    // room.votes = {};
+  }
+  // 🧮 Scoring System
 });
+
 
 
 
