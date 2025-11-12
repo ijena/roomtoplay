@@ -263,7 +263,7 @@ room.players.forEach(player => {
       // Non-Impostor: +1 if voted impostor, −1 if got voted
       const votedForImpostor = votes.some(v => impostorNames.includes(v));
       if (votedForImpostor) roundScore += 1;
-      if ((votesReceived[pname] || 0) > 0) roundScore -= 1;
+      if (impostorNames.includes(pname)){ roundScore -= 1;}
     }
   }
 
