@@ -269,11 +269,12 @@ room.players.forEach(player => {
 
   // ----- VARIABLE IMPOSTOR MODE -----
   else {
+    const caught = impostorNames.includes(pname);
+
     if (role === "impostor") {
-      const caught = impostorNames.includes(pname);
       if (!caught) roundScore += 2;
     } else {
-      if ((votesReceived[pname] || 0) > 0) roundScore -= 1;
+      if (caught) roundScore -= 1;
     }
 
     // Everyone: +1 per impostor voted
