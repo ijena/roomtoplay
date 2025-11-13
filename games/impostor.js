@@ -208,11 +208,12 @@ socket.on("submit-vote", ({ votes }) => {
 
     // ✅ Send results to all players
     namespace.to(roomCode).emit("vote-results", {
-      tally: sorted,
-      byPlayer: room.votes,
-      topVoted,
+  question: room.currentPrompt,      // 🧩 the actual question
+  votesByPlayer: room.votes,         // ✅ matches frontend variable name
+  topVoted,                          // 🏆 highest voted names
+  impostors: room.lastImpostors || []// 🕵️ true impostors
+});
 
-    });
 if (!room.scores) room.scores = {};
 //const impostorMode = room.settings?.impostorMode || "variable";
 
