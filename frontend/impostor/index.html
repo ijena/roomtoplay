@@ -222,39 +222,32 @@ socket.on("reveal-answers", ({ answers, question }) => {
 });
 
 
-socket.on("vote-results", ({ tally, byPlayer, impostors }) => {
-  console.log("✅ vote-results:", { tally, byPlayer });
-  let html = "<h3>Vote Results:</h3><ul>";
+socket.on("vote-results", ({ question, votesByPlayer, topVoted, impostors }) => {
+  let html = `<h3>🧩 Question: ${question}</h3>`;
 
-  tally.forEach(([name, count]) => {
-    const votesText = count === 1 ? "vote" : "votes";
-    // ✅ Convert "__NONE__" into readable label
-    const displayName = (name === "__NONE__" || name === "None") ? "No one" : name;
-    html += `<li><strong>${displayName}</strong>: ${count} ${votesText}</li>`;
-  });
-  html += "</ul>";
-
-  html += "<h4>Who Voted for Whom:</h4><ul>";
-  for (const [voterId, votedNames] of Object.entries(byPlayer)) {
-    const voter = allPlayers.find(p => p.id === voterId);
-    const voterName = voter ? voter.name : "Unknown Player";
-    const votedDisplay = votedNames
-      .map(n => (n === "__NONE__" ? "No one" : n))
-      .join(", ");
-    html += `<li><strong>${voterName}</strong> → ${votedDisplay}</li>`;
+  // 🗳️ Each player’s votes
+  html += `<h3>🗳️ Player Votes:</h3><ul>`;
+  for (const [player, votes] of Object.entries(votesByPlayer)) {
+    html += `<li><strong>${player}</strong> voted for: ${votes.join(", ") || "none"}</li>`;
   }
-  html += "</ul>";
-   if (impostors && impostors.length > 0) {
-        const displayNames = impostors.map(name => (name === "__NONE__" ? "No one" : name)).join(", ");
-        html += `<h3>🚨 Impostor${impostors.length > 1 ? "s" : ""} Revealed:</h3>
-                 <p><strong>${displayNames}</strong></p>`;
-      } else {
-        html += `<h3>😶 No impostor identified this round!</h3>`;
-      }
+  html += `</ul>`;
 
-  document.getElementById("answersReveal").innerHTML += html;
-  document.getElementById("voteSection").style.display = "none";
+  // 🏆 Top-voted players (voted out)
+  if (topVoted && topVoted.length > 0) {
+    html += `<p><strong>⚖️ Top-Voted Player${topVoted.length > 1 ? "s" : ""}:</strong> 
+             ${topVoted.join(", ")}</p>`;
+  }
+
+  // 🕵️ Reveal the real impostors
+  if (impostors && impostors.length > 0) {
+    html += `<p><strong>🕵️ Actual Impostors:</strong> 
+             ${impostors.map(n => `<span style="color:#e74c3c;">${n}</span>`).join(", ")}</p>`;
+  }
+
+  document.getElementById("answersReveal").innerHTML = html;
 });
+
+
 socket.on("score-update", ({ totals, deltas }) => {
   let html = "<h3>🏆 Scores</h3><ul>";
   for (const player of allPlayers) {

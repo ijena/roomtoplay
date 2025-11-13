@@ -197,21 +197,21 @@ socket.on("submit-vote", ({ votes }) => {
     const impostorMode = room.settings?.impostorMode || "variable";
     let impostors = [];
 
-    impostors = topVoted.filter(name => name !== "__NONE__");
+    topVoted = topVoted.filter(name => name !== "__NONE__");
 
 
     console.log(`📊 Final vote results for ${roomCode}:`, {
       impostorMode,
       tally: sorted,
       topVoted,
-      impostors
-    });
+       });
 
     // ✅ Send results to all players
     namespace.to(roomCode).emit("vote-results", {
       tally: sorted,
       byPlayer: room.votes,
-      impostors
+      topVoted,
+
     });
 if (!room.scores) room.scores = {};
 //const impostorMode = room.settings?.impostorMode || "variable";
