@@ -96,57 +96,51 @@ socket.on("join", ({ playerName, roomCode, }) => {
   const roomCode = socket.data.roomCode;
   const room = rooms[roomCode];
   if (!room) return;
-  if (socket.id !== room.hostId) return;
-  const players = room.players;
-  if (players.length < 3) {
-    socket.emit("error", "At least 3 players required to start the round.");
+  if (socket.id !== room.hostId) return; // only host can start
+  if (room.players.length < 2) {
+    socket.emit("error", "Need at least 3 players to start.");
     return;
   }
-  io.of("/impostor").to(roomCode).emit("update-players", room.players);
 
-  room.answers = {}; // 🆕 clear previous round's answers
-  room.answers = {}; // reset previous answers
-room.votes = {};   // ✅ NEW: reset previous votes
+  const players = room.players;
+  const impostorMode = room.settings?.impostorMode || "variable";
 
-
-
-  const impostorMode = room.settings.impostorMode || "variable";
+  // Decide impostor count
   const numImpostors = impostorMode === "one"
     ? 1
-    : Math.floor(Math.random() * players.length);
+    : Math.max(1, Math.floor(players.length / 3));
 
-  const { normalPrompt, impostorPrompts } = generatePromptForRound(numImpostors);
-
-  if (impostorMode === "one") {
-    const impostorIndex = Math.floor(Math.random() * players.length);
-    const impostorId = players[impostorIndex].id;
-
-    players.forEach((player) => {
-      const role = player.id === impostorId ? "impostor" : "normal";
-      const prompt = role === "impostor"
-        ? impostorPrompts.pop() || normalPrompt
-        : normalPrompt;
-      io.of("/impostor").to(player.id).emit("prompt", { prompt });
-    });
-
-    return; // end early so it doesn’t fall through to variable logic
-  }
-
-  // For "variable" mode
-  const roles = [
-    ...Array(players.length - numImpostors).fill("normal"),
-    ...Array(numImpostors).fill("impostor")
-  ];
+  // Assign roles
+  const roles = Array(players.length)
+    .fill("normal")
+    .fill("impostor", 0, numImpostors);
   shuffleArray(roles);
 
+  // 🔹 Build impostor name list and store for scoring later
+  const impostors = [];
+  players.forEach((player, index) => {
+    if (roles[index] === "impostor") impostors.push(player.name);
+  });
+  room.lastImpostors = impostors;
+  console.log(`🕵️ Impostors for room ${roomCode}:`, impostors);
+
+  // Generate prompt
+  const { normalPrompt, impostorPrompts } = generatePromptForRound(numImpostors);
+
+  // Send prompts individually
   players.forEach((player, index) => {
     const role = roles[index];
-    const prompt = role === "impostor"
-      ? impostorPrompts.pop() || normalPrompt
-      : normalPrompt;
+    const prompt =
+      role === "normal"
+        ? normalPrompt
+        : impostorPrompts.pop() || normalPrompt;
     io.of("/impostor").to(player.id).emit("prompt", { prompt });
   });
+
+  // Reset votes each round
+  room.votes = {};
 });
+
 
 socket.on("submit-answer", ({ answer }) => {
   const roomCode = socket.data.roomCode;
