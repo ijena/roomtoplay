@@ -63,7 +63,14 @@ module.exports = function registerImpostorGame(io){
 socket.on("join", ({ playerName, roomCode, }) => {
   const room = rooms[roomCode];
   if (!room) return socket.emit("error", "Room not found");
+  if (!playerName.trim()) return socket.emit("error", "Name cannot be empty");
 
+  const duplicate = room.players.some(
+    (p) => p.name.toLowerCase() === playerName.trim().toLowerCase()
+  );
+  if (duplicate) {
+    return socket.emit("error", "That name is already taken in this room.");
+  }
   room.players.push({ id: socket.id, name: playerName });
   socket.join(roomCode);
   socket.data.roomCode = roomCode;
