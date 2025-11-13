@@ -363,42 +363,53 @@ socket.on("disconnect", () => {
 
 
 
-// 🔮 Uses OpenAI to generate one normal + N alternate prompts
-async function generatePromptSet(numImpostors) {
-  try {
-    const systemPrompt = `You are a game prompt generator for a social deception game.
-Generate one main question that everyone answers.
-Then generate ${numImpostors} alternate versions of that same question that sound similar but may lead to different answers.`;
+// 🎯 Generate a new question pair set based on category and impostor count
+async function generatePromptSet(category = "opinion", numImpostors = 1) {
+  const systemPrompt = `You are a prompt writer for a social deception game called "Find the Impostor".
+Each round, players get slightly different prompts to make the impostor blend in.
+Generate one main question (for all normal players) and ${numImpostors} alternate impostor prompts
+that are close in theme but different in meaning.`;
 
-    const userPrompt = `Give the prompt set in this JSON format:
+  const userPrompt = `Category: ${category}
+
+Examples of categories:
+- opinion: preferences, choices, likes/dislikes
+- sensory: visual or emotional descriptions
+- cultural: pop culture, movies, holidays
+- player-based: about people in the group
+- wildcard: creative or abstract
+
+Output in JSON ONLY:
 {
-  "normal": "Main prompt here",
-  "impostors": ["Alt 1", "Alt 2", ..., "Alt N"]
+  "normal": "main prompt",
+  "impostors": ["alt1", "alt2", ...]
 }`;
 
+  try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-4.1-nano",
+      model: "gpt-4.1-nano", // light + cheap
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt }
       ],
-      temperature: 0.8,
+      temperature: 0.9 // more creative variations
     });
 
-    const content = completion.choices[0].message.content;
-    const json = JSON.parse(content);
+    const raw = completion.choices[0].message.content;
+    const json = JSON.parse(raw);
 
     if (json.normal && Array.isArray(json.impostors)) {
       return json;
     } else {
-      console.error("⚠️ Invalid prompt structure from OpenAI:", content);
+      console.error("⚠️ Invalid prompt structure:", raw);
       return null;
     }
   } catch (err) {
-    console.error("❌ Error generating prompt from OpenAI:", err.message);
+    console.error("❌ Error generating prompt:", err.message);
     return null;
   }
 }
+
 
 function generatePromptForRound(numImpostors) {
   const normalPrompt = "What's your go-to midnight snack?";
