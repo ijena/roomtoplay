@@ -133,7 +133,7 @@ socket.on("join", ({ playerName, roomCode, }) => {
   console.log(`🕵️ Impostors for room ${roomCode}:`, impostors);
 
   // Generate prompt
-  const categories = ["opinion", "sensory", "cultural", "player-based", "wildcard"];
+  const categories = ["opinion", "sensory", "cultural", "player-based"];
   const category = categories[Math.floor(Math.random() * categories.length)];
 
   // 🧠 Generate prompt from OpenAI
@@ -375,7 +375,7 @@ async function generatePromptSet(category = "opinion", numImpostors = 1) {
   const systemPrompt = `You are a prompt writer for a social deception game called "Find the Impostor".
 Each round, players get slightly different prompts to make the impostor blend in.
 Generate one main question (for all normal players) and ${numImpostors} alternate impostor prompts
-that are close in theme but different in meaning.`;
+that are close in theme but different in meaning. Make sure that for different players the answer can be the same to all those prompts`;
 
   const userPrompt = `Category: ${category}
 
@@ -384,7 +384,6 @@ Examples of categories:
 - sensory: visual or emotional descriptions
 - cultural: pop culture, movies, holidays
 - player-based: about people in the group
-- wildcard: creative or abstract
 
 Output in JSON ONLY:
 {
