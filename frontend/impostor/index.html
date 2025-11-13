@@ -209,16 +209,18 @@ function submitVote() {
   impostorMode = settings.impostorMode; // Store for voting logic
 });
 
-socket.on("reveal-answers", (allAnswers) => {
-  let html = "<h3>Everyone's Answers:</h3><ul>";
-  for (const { name, answer } of allAnswers) {
+socket.on("reveal-answers", ({ answers, question }) => {
+  let html = `<h3> Non Impostor Question: ${question}</h3><h3>Everyone's Answers:</h3><ul>`;
+  for (const { name, answer } of Object.values(answers)) {
     html += `<li><strong>${name}:</strong> ${answer}</li>`;
   }
   html += "</ul>";
   document.getElementById("answersReveal").innerHTML = html;
-  renderVotingForm(); // Start voting right after answer reveal
 
+  // Now show the vote form
+  renderVotingForm();
 });
+
 
 socket.on("vote-results", ({ tally, byPlayer, impostors }) => {
   console.log("✅ vote-results:", { tally, byPlayer });

@@ -127,6 +127,7 @@ socket.on("join", ({ playerName, roomCode, }) => {
 
   // Generate prompt
   const { normalPrompt, impostorPrompts } = generatePromptForRound(numImpostors);
+  room.currentPrompt = normalPrompt;
 
   // Send prompts individually
   players.forEach((player, index) => {
@@ -156,8 +157,10 @@ socket.on("submit-answer", ({ answer }) => {
   if (Object.keys(room.answers).length === room.players.length) {
     const allAnswers = Object.values(room.answers);
     io.of("/impostor").to(roomCode).emit("update-players", room.players);
-    io.of("/impostor").to(roomCode).emit("reveal-answers", allAnswers);
-  }
+namespace.to(roomCode).emit("reveal-answers", {
+    answers: room.answers,
+    question: room.currentPrompt, // <— the shared prompt
+  });  }
 });
 // Inside the namespace connection handler:
 socket.on("submit-vote", ({ votes }) => {
