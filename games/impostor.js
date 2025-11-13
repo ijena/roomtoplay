@@ -277,12 +277,18 @@ room.players.forEach(player => {
     //Everyone: −1 per normal voted
     const incorrectVotes = votes.filter(v => playerRoles[v] === "normal").length;
     roundScore -= incorrectVotes;
-    // Clean Ballot: voted all impostors, no normals
-    const votedNormals = votes.some(v => playerRoles[v] === "normal");
-    const missedImpostors = impostorNames.some(i => !votes.includes(i));
-    if (!votedNormals && !missedImpostors && votes.length > 0) {
-      roundScore += 1;
-    }
+    // 🧠 Clean Ballot logic — impostors can qualify too
+const votedNormals = votes.some(v => playerRoles[v] === "normal");
+
+// Exclude self if this player is an impostor
+const missedImpostors = impostorNames.some(
+  i => i !== pname && !votes.includes(i)
+);
+
+if (!votedNormals && !missedImpostors && votes.length > 0) {
+  roundScore += 1;
+}
+
   }
   roundChanges[pid] = roundScore;
   // Update cumulative totals
