@@ -133,8 +133,15 @@ socket.on("join", ({ playerName, roomCode, }) => {
   console.log(`🕵️ Impostors for room ${roomCode}:`, impostors);
 
   // Generate prompt
-  const { normalPrompt, impostorPrompts } = generatePromptForRound(numImpostors);
-  room.currentPrompt = normalPrompt;
+  const categories = ["opinion", "sensory", "cultural", "player-based", "wildcard"];
+  const category = categories[Math.floor(Math.random() * categories.length)];
+
+  // 🧠 Generate prompt from OpenAI
+  const promptSet = await generatePromptSet(category, numImpostors);
+  normalPrompt = promptSet.normal;
+  impostorPrompts = promptSet.impostors;
+  // const { normalPrompt, impostorPrompts } = generatePromptForRound(numImpostors);
+  room.currentPrompt = normalPrompt
 
   // Send prompts individually
   players.forEach((player, index) => {
