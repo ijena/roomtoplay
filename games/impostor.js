@@ -193,19 +193,8 @@ socket.on("submit-vote", ({ votes }) => {
     const impostorMode = room.settings?.impostorMode || "variable";
     let impostors = [];
 
-    // 🎯 ONE IMPOSTOR MODE: randomly select one from the top tied players
-    if (impostorMode === "one") {
-      topVoted = topVoted.filter(n => n !== "__NONE__");
-      if (topVoted.length > 0) {
-        const randomIndex = Math.floor(Math.random() * topVoted.length);
-        impostors = [topVoted[randomIndex]];
-      }
-    }
+    impostors = topVoted.filter(name => name !== "__NONE__");
 
-    // 🎯 VARIABLE IMPOSTORS MODE: all tied top-voted players are impostors (ignore "__NONE__")
-    else {
-      impostors = topVoted.filter(name => name !== "__NONE__");
-    }
 
     console.log(`📊 Final vote results for ${roomCode}:`, {
       impostorMode,
