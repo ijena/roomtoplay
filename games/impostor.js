@@ -97,10 +97,11 @@ socket.on("join", ({ playerName, roomCode, }) => {
   const room = rooms[roomCode];
   if (!room) return;
   if (socket.id !== room.hostId) return; // only host can start
-  if (room.players.length < 2) {
+  if (room.players.length < 3) {
     socket.emit("error", "Need at least 3 players to start.");
     return;
   }
+  resetRoundState(room);
 
   const players = room.players;
   const impostorMode = room.settings?.impostorMode || "variable";
@@ -422,3 +423,15 @@ function shuffleArray(array) {
       [array[i], array[j]] = [array[j], array[i]];
     }
   }
+
+  // 🧹 Reset all per-round data in a room
+function resetRoundState(room) {
+  // Clear previous round data
+  room.answers = {};         // players’ answers for the prompt
+  room.votes = {};           // votes for impostor
+  room.lastImpostors = [];   // reset impostor list (will be re-set in start-round)
+  room.currentPrompt = null; // optional: track the prompt used this round
+  room.roundActive = false;  // flag to mark if a round is currently ongoing
+
+  console.log(`🧹 Cleared round state for room ${room.code || "?"}`);
+}
