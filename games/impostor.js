@@ -230,15 +230,18 @@ namespace.to(roomCode).emit("vote-results", {
 
 
 if (!room.scores) room.scores = {};
-const impostorMode = room.settings?.impostorMode || "variable";
+//const impostorMode = room.settings?.impostorMode || "variable";
+
 
 // ✅ get impostor names from last round (stored on room object)
-const impostorNames = room.lastImpostors || [];
+//const impostorNames = room.lastImpostors || [];
+const impostors = room.lastImpostors || [];
+const impostorNames = topVoted || [];
 
 // Map player roles
 const playerRoles = {};
 room.players.forEach(p => {
-  playerRoles[p.name] = impostorNames.includes(p.name) ? "impostor" : "normal";
+  playerRoles[p.name] = impostors.includes(p.name) ? "impostor" : "normal";
 });
 
 // Build vote counts
@@ -260,19 +263,19 @@ room.players.forEach(player => {
   if (impostorMode === "one") {
     if (role === "impostor") {
       // Impostor: +2 if not caught
-      const caught = impostors.includes(pname);
+      const caught = impostorNames.includes(pname);
       roundScore += caught ? 0 : 2;
     } else {
       // Non-Impostor: +1 if voted impostor, −1 if got voted
       const votedForImpostor = votes.some(v => impostorNames.includes(v));
       if (votedForImpostor) roundScore += 1;
-      if (impostors.includes(pname)){ roundScore -= 1;}
+      if (impostorNames.includes(pname)){ roundScore -= 1;}
     }
   }
 
   // ----- VARIABLE IMPOSTOR MODE -----
   else {
-    const caught = impostors.includes(pname);
+    const caught = impostorNames.includes(pname);
 
     if (role === "impostor") {
       if (!caught) roundScore += 2;
@@ -288,7 +291,7 @@ room.players.forEach(player => {
     roundScore -= incorrectVotes;
    // 🧠 Clean Ballot logic — includes abstaining players
 const votedNormals = votes.some(v => playerRoles[v] === "normal");
-const missedImpostors = impostorNames.some(
+const missedImpostors = impostors.some(
   i => i !== pname && !votes.includes(i)
 );
 
