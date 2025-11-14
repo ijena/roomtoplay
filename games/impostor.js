@@ -383,6 +383,7 @@ Rules for writing good prompts:
 - Prefer subtle context shifts (e.g., "What’s a meal you cook often?" vs "What’s a meal you wish you could cook?")
 - Avoid yes/no questions or ones with factual answers.
 - Keep all questions open-ended, conversational, and about experiences, opinions, or preferences.
+- Do not ask why in the question.
 
 Now, generate one normal question and ${numImpostors} impostor versions that meet these rules.
 Each impostor version should feel close enough to the normal prompt to create confusion.
