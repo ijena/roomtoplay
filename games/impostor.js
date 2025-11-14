@@ -284,7 +284,7 @@ room.players.forEach(player => {
     }
 
     // Everyone: +1 per impostor voted
-    const correctVotes = votes.filter(v => impostorNames.includes(v)).length;
+    const correctVotes = votes.filter(v => impostors.includes(v)).length;
     roundScore += correctVotes;
     //Everyone: −1 per normal voted
     const incorrectVotes = votes.filter(v => playerRoles[v] === "normal").length;
