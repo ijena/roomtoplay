@@ -171,7 +171,7 @@ function submitVote() {
 
     socket.on("room-created", ({ roomCode: code,players }) => {
       roomCode = code;
-      document.getElementById("roomInfo").innerText = `Room: ${roomCode} | You: ${playerName}`;
+      document.getElementById("roomInfo").innerText = `Room Code: ${roomCode} | You: ${playerName}`;
     updatePlayerList(players);
 
       showScreen("lobbyScreen");
@@ -223,10 +223,9 @@ socket.on("reveal-answers", ({ answers, question }) => {
 
 
 socket.on("vote-results", ({ question, votesByPlayer, topVoted, impostors }) => {
-  let html = `<h3>🧩 Question: ${question}</h3>`;
+    let html = `<h3>🗳️ Player Votes:</h3><ul>`;
 
   // 🗳️ Each player’s votes
-  html += `<h3>🗳️ Player Votes:</h3><ul>`;
   for (const [player, votes] of Object.entries(votesByPlayer)) {
     html += `<li><strong>${player}</strong> voted for: ${votes.join(", ") || "none"}</li>`;
   }
