@@ -229,7 +229,11 @@ let  html = `<h3>🗳️ Player Votes:</h3><ul>`;
     html += `<li><strong>${player}</strong> voted for: ${votes.length ? votes.join(", ") : "None"}</li>`;
   }
   html += `</ul>`;
-
+  // 🧮 Show tally summary
+  html += `<h3>📊 Tally:</h3><ul>`;
+  for (const [name, count] of Object.entries(tally || {})) {
+    html += `<li>${name}: ${count} vote${count !== 1 ? "s" : ""}</li>`;
+  }
   // 🏆 Show top votes
   if (topVoted && topVoted.length > 0) {
     html += `<p><strong>⚖️ Top-Voted:</strong> ${topVoted.join(", ")}</p>`;
@@ -242,11 +246,7 @@ let  html = `<h3>🗳️ Player Votes:</h3><ul>`;
     impostors.length ? impostors.join(", ") : "None this round"
   }</p>`;
 
-  // 🧮 Show tally summary
-  html += `<h3>📊 Tally:</h3><ul>`;
-  for (const [name, count] of Object.entries(tally || {})) {
-    html += `<li>${name}: ${count} vote${count !== 1 ? "s" : ""}</li>`;
-  }
+  
   html += `</ul>`;
 
   document.getElementById("answersReveal").innerHTML = html;
