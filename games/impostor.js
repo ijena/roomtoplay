@@ -116,7 +116,8 @@ socket.on("join", ({ playerName, roomCode, }) => {
   // Decide impostor count
   const numImpostors = impostorMode === "one"
     ? 1
-    : Math.max(1, Math.floor(players.length / 3));
+    : Math.floor(Math.random() * (players.length + 1))
+;
 
   // Assign roles
   const roles = Array(players.length)
@@ -396,7 +397,7 @@ Output JSON in this format:
 
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-4.1-nano",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt }
