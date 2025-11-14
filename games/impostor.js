@@ -256,7 +256,7 @@ room.players.forEach(player => {
   const pid = player.id;
   const pname = player.name;
   const role = playerRoles[pname];
-  const votes = room.votes?.[pid] || [];
+  const votes = room.votes?.[pname] || [];
   let roundScore = 0;
 
   // ----- SINGLE IMPOSTOR MODE -----
