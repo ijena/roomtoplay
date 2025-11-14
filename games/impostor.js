@@ -119,11 +119,13 @@ socket.on("join", ({ playerName, roomCode, }) => {
     : Math.floor(Math.random() * (players.length + 1))
 ;
 
-  // Assign roles
-  const roles = Array(players.length)
-    .fill("normal")
-    .fill("impostor", 0, numImpostors);
-  shuffleArray(roles);
+  // Assign roles properly — one role per player
+const roles = Array(players.length).fill("normal");
+for (let i = 0; i < numImpostors; i++) {
+  roles[i] = "impostor";
+}
+shuffleArray(roles); // ensures random impostor placement
+
 
   // 🔹 Build impostor name list and store for scoring later
   const impostors = [];
