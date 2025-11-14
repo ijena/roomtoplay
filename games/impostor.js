@@ -193,43 +193,41 @@ room.votes[socket.data.playerName] = votes;
 
   // ✅ Wait for all players to vote
   if (Object.keys(room.votes).length === room.players.length) {
-    const allVotes = Object.values(room.votes).flat();
-    const tally = {};
+    // 🧮 Count all votes
+const allVotes = Object.values(room.votes).flat();
+const tally = {};
 
-    // Count all votes (including "__NONE__")
-    allVotes.forEach(name => {
-      tally[name] = (tally[name] || 0) + 1;
-    });
-
-    // Sort players by votes (highest → lowest)
-    const sorted = Object.entries(tally).sort((a, b) => b[1] - a[1]);
-
-    // Identify top-voted players
-    const highestVotes = sorted[0] ? sorted[0][1] : 0;
-    let topVoted = sorted
-      .filter(([name, count]) => count === highestVotes)
-      .map(([name]) => name);
-
-    // Retrieve impostor mode for logic
-    const impostorMode = room.settings?.impostorMode || "variable";
-    let impostors = [];
-
-    topVoted = topVoted.filter(name => name !== "__NONE__");
-
-
-    console.log(`📊 Final vote results for ${roomCode}:`, {
-      impostorMode,
-      tally: sorted,
-      topVoted,
-       });
-
-    // ✅ Send results to all players
-    namespace.to(roomCode).emit("vote-results", {
-  question: room.currentPrompt,      // 🧩 the actual question
-  votesByPlayer: room.votes,         // ✅ matches frontend variable name
-  topVoted,                          // 🏆 highest voted names
-  impostors: room.lastImpostors || []// 🕵️ true impostors
+// Count each vote (including "__NONE__")
+allVotes.forEach(v => {
+  const name = v === "__NONE__" ? "None" : v;
+  tally[name] = (tally[name] || 0) + 1;
 });
+
+// If everyone voted none or no votes at all
+if (Object.keys(tally).length === 0) {
+  tally["None"] = room.players.length;
+}
+
+// Find top voted
+const maxVotes = Math.max(...Object.values(tally));
+let topVoted = Object.entries(tally)
+  .filter(([_, c]) => c === maxVotes)
+  .map(([name]) => name);
+
+// Make sure “None” still appears if that’s all there is
+if (topVoted.length === 0) {
+  topVoted = ["None"];
+}
+
+// Always emit vote results
+namespace.to(roomCode).emit("vote-results", {
+  question: room.currentPrompt,
+  votesByPlayer: room.votes,
+  topVoted,
+  impostors: room.lastImpostors || [],
+  tally
+});
+
 
 if (!room.scores) room.scores = {};
 //const impostorMode = room.settings?.impostorMode || "variable";

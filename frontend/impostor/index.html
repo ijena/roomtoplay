@@ -222,29 +222,36 @@ socket.on("reveal-answers", ({ answers, question }) => {
 });
 
 
-socket.on("vote-results", ({ question, votesByPlayer, topVoted, impostors }) => {
-    let html = `<h3>🗳️ Player Votes:</h3><ul>`;
+socket.on("vote-results", ({ question, votesByPlayer, topVoted, impostors, tally }) => {
+let  html = `<h3>🗳️ Player Votes:</h3><ul>`;
 
-  // 🗳️ Each player’s votes
   for (const [player, votes] of Object.entries(votesByPlayer)) {
-    html += `<li><strong>${player}</strong> voted for: ${votes.join(", ") || "none"}</li>`;
+    html += `<li><strong>${player}</strong> voted for: ${votes.length ? votes.join(", ") : "None"}</li>`;
   }
   html += `</ul>`;
 
-  // 🏆 Top-voted players (voted out)
+  // 🏆 Show top votes
   if (topVoted && topVoted.length > 0) {
-    html += `<p><strong>⚖️ Top-Voted Player${topVoted.length > 1 ? "s" : ""}:</strong> 
-             ${topVoted.join(", ")}</p>`;
+    html += `<p><strong>⚖️ Top-Voted:</strong> ${topVoted.join(", ")}</p>`;
+  } else {
+    html += `<p><strong>⚖️ Top-Voted:</strong> None</p>`;
   }
 
-  // 🕵️ Reveal the real impostors
-  if (impostors && impostors.length > 0) {
-    html += `<p><strong>🕵️ Actual Impostors:</strong> 
-             ${impostors.map(n => `<span style="color:#e74c3c;">${n}</span>`).join(", ")}</p>`;
+  // 🕵️ Show impostors even if empty
+  html += `<p><strong>🕵️ Actual Impostors:</strong> ${
+    impostors.length ? impostors.join(", ") : "None this round"
+  }</p>`;
+
+  // 🧮 Show tally summary
+  html += `<h3>📊 Tally:</h3><ul>`;
+  for (const [name, count] of Object.entries(tally || {})) {
+    html += `<li>${name}: ${count} vote${count !== 1 ? "s" : ""}</li>`;
   }
+  html += `</ul>`;
 
   document.getElementById("answersReveal").innerHTML = html;
 });
+
 
 
 socket.on("score-update", ({ totals, deltas }) => {
