@@ -372,44 +372,41 @@ socket.on("disconnect", () => {
 
 // 🎯 Generate a new question pair set based on category and impostor count
 async function generatePromptSet(category = "opinion", numImpostors = 1) {
-  const systemPrompt = `You are a prompt writer for a social deception game called "Find the Impostor".
-Each round, players get slightly different prompts to make the impostor blend in.
-Generate one main question (for all normal players) and ${numImpostors} alternate impostor prompts
-that are close in theme but different in meaning. Make sure that for different players the answer can be the same to all those prompts`;
+  const systemPrompt = `
+You are a game prompt generator for a social deception game called "Find the Impostor".
+Each round, all players answer a question. The impostor(s) receive slightly different versions
+that sound very similar but may subtly lead to different interpretations or reasoning.
 
-  const userPrompt = `Category: ${category}
+Rules for writing good prompts:
+- The normal and impostor prompts should sound almost the same in casual conversation.
+- It should be possible for players to give overlapping or believable answers.
+- Prefer subtle context shifts (e.g., "What’s a meal you cook often?" vs "What’s a meal you wish you could cook?")
+- Avoid yes/no questions or ones with factual answers.
+- Keep all questions open-ended, conversational, and about experiences, opinions, or preferences.
 
-Examples of categories:
-- opinion: preferences, choices, likes/dislikes
-- sensory: visual or emotional descriptions
-- cultural: pop culture, movies, holidays
-- player-based: about people in the group
-
-Output in JSON ONLY:
+Now, generate one normal question and ${numImpostors} impostor versions that meet these rules.
+Each impostor version should feel close enough to the normal prompt to create confusion.
+Output JSON in this format:
 {
-  "normal": "main prompt",
-  "impostors": ["alt1", "alt2", ...]
+  "normal": "Main question",
+  "impostors": ["Impostor1", "Impostor2", ...]
 }`;
+
+  const userPrompt = `Category: ${category}`;
 
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-4.1-nano", // light + cheap
+      model: "gpt-4o-mini",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt }
       ],
-      temperature: 0.9 // more creative variations
+      temperature: 0.9,
     });
 
-    const raw = completion.choices[0].message.content;
-    const json = JSON.parse(raw);
-
-    if (json.normal && Array.isArray(json.impostors)) {
-      return json;
-    } else {
-      console.error("⚠️ Invalid prompt structure:", raw);
-      return null;
-    }
+    const content = completion.choices[0].message.content;
+    const json = JSON.parse(content);
+    return json;
   } catch (err) {
     console.error("❌ Error generating prompt:", err.message);
     return null;
@@ -417,28 +414,28 @@ Output in JSON ONLY:
 }
 
 
-function generatePromptForRound(numImpostors) {
-  const normalPrompt = "What's your go-to midnight snack?";
+// function generatePromptForRound(numImpostors) {
+//   const normalPrompt = "What's your go-to midnight snack?";
 
-  // Make sure we always have a safe default array
-  const allImpostorPrompts = [
-    "What's a midnight snack that gives you the ick?",
-    "What snack do you avoid before bed?",
-    "What's the worst late-night craving you've had?",
-    "What's a snack you regret eating at night?",
-    "What food keeps you up at night?"
-  ];
+//   // Make sure we always have a safe default array
+//   const allImpostorPrompts = [
+//     "What's a midnight snack that gives you the ick?",
+//     "What snack do you avoid before bed?",
+//     "What's the worst late-night craving you've had?",
+//     "What's a snack you regret eating at night?",
+//     "What food keeps you up at night?"
+//   ];
 
-  // Shuffle and take as many impostor prompts as needed
-  const shuffled = [...allImpostorPrompts];
-  shuffleArray(shuffled);
-  const selected = shuffled.slice(0, numImpostors);
+//   // Shuffle and take as many impostor prompts as needed
+//   const shuffled = [...allImpostorPrompts];
+//   shuffleArray(shuffled);
+//   const selected = shuffled.slice(0, numImpostors);
 
-  return {
-    normalPrompt,
-    impostorPrompts: selected
-  };
-}
+//   return {
+//     normalPrompt,
+//     impostorPrompts: selected
+//   };
+// }
 
 
 function generateRoomCode() {
