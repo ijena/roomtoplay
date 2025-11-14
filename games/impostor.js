@@ -230,7 +230,7 @@ namespace.to(roomCode).emit("vote-results", {
 
 
 if (!room.scores) room.scores = {};
-//const impostorMode = room.settings?.impostorMode || "variable";
+const impostorMode = room.settings?.impostorMode || "variable";
 
 
 // ✅ get impostor names from last round (stored on room object)
