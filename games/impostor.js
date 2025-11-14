@@ -286,17 +286,19 @@ room.players.forEach(player => {
     //Everyone: −1 per normal voted
     const incorrectVotes = votes.filter(v => playerRoles[v] === "normal").length;
     roundScore -= incorrectVotes;
-    // 🧠 Clean Ballot logic — impostors can qualify too
+   // 🧠 Clean Ballot logic — includes abstaining players
 const votedNormals = votes.some(v => playerRoles[v] === "normal");
-
-// Exclude self if this player is an impostor
 const missedImpostors = impostorNames.some(
   i => i !== pname && !votes.includes(i)
 );
 
-if (!votedNormals && !missedImpostors && votes.length > 0) {
+// A clean ballot means: no normal voted, no impostor missed, or abstained entirely
+const abstained = votes.length === 0 || votes.includes("__NONE__");
+
+if (!votedNormals && !missedImpostors && (abstained || votes.length > 0)) {
   roundScore += 1;
 }
+
 
   }
   roundChanges[pid] = roundScore;
