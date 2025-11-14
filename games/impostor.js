@@ -375,10 +375,9 @@ async function generatePromptSet(category = "opinion", numImpostors = 1) {
   const systemPrompt = `
 You are a game prompt generator for a social deception game called "Find the Impostor".
 Each round, all players answer a question. The impostor(s) receive slightly different versions
-that sound very similar but may subtly lead to different interpretations or reasoning.
+on the same topic.
 
 Rules for writing good prompts:
-- The normal and impostor prompts should sound almost the same in casual conversation.
 - It should be possible for players to give overlapping or believable answers.
 - Prefer subtle context shifts (e.g., "What’s a meal you cook often?" vs "What’s a meal you wish you could cook?")
 - Avoid yes/no questions or ones with factual answers.
