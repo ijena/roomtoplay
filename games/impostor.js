@@ -338,7 +338,7 @@ socket.on("disconnect", () => {
 
     room.players = room.players.filter((p) => p.id !== socket.id);
     delete room.answers[socket.id]; // 🆕 Clear their answer if they leave
-    delete room.votes[socket.id];  // ✅ Clear their vote if they leave
+    delete room.votes[socket.playerName];  // ✅ Clear their vote if they leave
 
     io.of("/impostor").to(roomCode).emit("update-players", room.players);
 
@@ -367,6 +367,11 @@ socket.on("disconnect", () => {
 
     console.log(`🧹 Room ${roomCode} deleted (empty)`);
   }
+}
+
+if (room.players.length === 0) {
+  delete rooms[roomCode];
+  console.log(`🧹 Room ${roomCode} deleted (no players remaining)`);
 }
 
 });
