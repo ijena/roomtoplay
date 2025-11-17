@@ -187,7 +187,7 @@ socket.on("submit-vote", ({ votes }) => {
 
   // 🗳️ Record votes — even if empty, store "__NONE__"
   const selectedVotes = Array.isArray(votes) && votes.length > 0 ? votes : ["__NONE__"];
-room.votes[socket.data.playerName] = votes;
+room.votes[socket.data.playerName] = selectedVotes;
 
   console.log(`🗳️ ${socket.data.playerName} voted for:`, selectedVotes);
 
@@ -291,9 +291,10 @@ room.players.forEach(player => {
     roundScore -= incorrectVotes;
    // 🧠 Clean Ballot logic — includes abstaining players
 const votedNormals = votes.some(v => playerRoles[v] === "normal");
-const missedImpostors = impostors.some(
-  i => i !== pname && !votes.includes(i)
-);
+const missedImpostors =
+  impostors.length > 0 &&
+  impostors.some(i => i !== pname && !votes.includes(i));
+
 
 // A clean ballot means: no normal voted, no impostor missed, or abstained entirely
 const abstained = votes.length === 0 || votes.includes("__NONE__");
@@ -301,6 +302,7 @@ const abstained = votes.length === 0 || votes.includes("__NONE__");
 if (!votedNormals && !missedImpostors && (abstained || votes.length > 0)) {
   roundScore += 1;
 }
+
 
 
   }
