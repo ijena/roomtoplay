@@ -189,7 +189,7 @@ socket.on("submit-vote", ({ votes }) => {
   const selectedVotes = Array.isArray(votes) && votes.length > 0 ? votes : ["__NONE__"];
 room.votes[socket.data.playerName] =votes;
 
-  console.log(`🗳️ ${socket.data.playerName} voted for:`, selectedvotes);
+  console.log(`🗳️ ${socket.data.playerName} voted for:`, selectedVotes);
 
   // ✅ Wait for all players to vote
   if (Object.keys(room.votes).length === room.players.length) {
