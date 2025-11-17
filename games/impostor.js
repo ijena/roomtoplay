@@ -187,9 +187,9 @@ socket.on("submit-vote", ({ votes }) => {
 
   // 🗳️ Record votes — even if empty, store "__NONE__"
   const selectedVotes = Array.isArray(votes) && votes.length > 0 ? votes : ["__NONE__"];
-room.votes[socket.data.playerName] = selectedVotes;
+room.votes[socket.data.playerName] =votes;
 
-  console.log(`🗳️ ${socket.data.playerName} voted for:`, selectedVotes);
+  console.log(`🗳️ ${socket.data.playerName} voted for:`, selectedvotes);
 
   // ✅ Wait for all players to vote
   if (Object.keys(room.votes).length === room.players.length) {
