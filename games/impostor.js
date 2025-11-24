@@ -136,14 +136,14 @@ shuffleArray(roles); // ensures random impostor placement
   console.log(`🕵️ Impostors for room ${roomCode}:`, impostors);
 
   // Generate prompt
-  const categories = ["opinion", "sensory", "cultural", "player-based"];
-  const category = categories[Math.floor(Math.random() * categories.length)];
+  // const categories = ["opinion", "sensory", "cultural", "player-based"];
+  // const category = categories[Math.floor(Math.random() * categories.length)];
 
-  // 🧠 Generate prompt from OpenAI
-  const promptSet = await generatePromptSet(category, numImpostors);
-  normalPrompt = promptSet.normal;
-  impostorPrompts = promptSet.impostors;
-  // const { normalPrompt, impostorPrompts } = generatePromptForRound(numImpostors);
+  // // 🧠 Generate prompt from OpenAI
+  // const promptSet = await generatePromptSet(category, numImpostors);
+  // normalPrompt = promptSet.normal;
+  // impostorPrompts = promptSet.impostors;
+  const { normalPrompt, impostorPrompts } = generatePromptForRound(numImpostors);
   room.currentPrompt = normalPrompt
 
   // Send prompts individually
@@ -427,28 +427,50 @@ Output JSON in this format:
 }
 
 
-// function generatePromptForRound(numImpostors) {
-//   const normalPrompt = "What's your go-to midnight snack?";
+function generatePromptForRound(numImpostors) {
+  const questionPool = [
+  { normalPrompt: "What's your favorite pizza topping?", impostorPrompts: ["What's a pizza topping you hate?", "What's the weirdest pizza topping you've tried?"] },
+  { normalPrompt: "What's your dream vacation spot?", impostorPrompts: ["What's a place you’d never travel to?", "What's the worst trip you’ve ever been on?"] },
+  { normalPrompt: "What's your go-to coffee order?", impostorPrompts: ["What’s a coffee order you’d never drink?", "What’s a drink that sounds terrible?"] },
+  { normalPrompt: "What’s your favorite childhood cartoon?", impostorPrompts: ["What cartoon did you never like?", "What cartoon character annoys you?"] },
+  { normalPrompt: "What’s a movie that always makes you smile?", impostorPrompts: ["What’s a movie that always bores you?", "What movie do people love but you don’t?"] },
+  { normalPrompt: "What’s your favorite hobby?", impostorPrompts: ["What’s a hobby you find boring?", "What’s something people enjoy that you don’t?"] },
+  { normalPrompt: "What’s your favorite animal?", impostorPrompts: ["What animal scares you?", "What animal would you never want as a pet?"] },
+  { normalPrompt: "What’s your favorite holiday?", impostorPrompts: ["What’s a holiday you don’t celebrate?", "What holiday do you find overrated?"] },
+  { normalPrompt: "What’s your favorite fast food chain?", impostorPrompts: ["What fast food chain do you avoid?", "What’s the worst item on a fast food menu?"] },
+  { normalPrompt: "What’s your favorite subject in school?", impostorPrompts: ["What subject did you struggle with?", "What subject bored you most?"] },
+  { normalPrompt: "What’s your favorite dessert?", impostorPrompts: ["What dessert do you dislike?", "What’s a dessert that’s overrated?"] },
+  { normalPrompt: "What’s your favorite video game?", impostorPrompts: ["What game frustrates you?", "What’s a game you could never finish?"] },
+  { normalPrompt: "What’s your favorite color?", impostorPrompts: ["What color do you dislike?", "What color would you never wear?"] },
+  { normalPrompt: "What’s your favorite season of the year?", impostorPrompts: ["What’s your least favorite season?", "Which season do you think is overrated?"] },
+  { normalPrompt: "What’s your favorite snack?", impostorPrompts: ["What snack do you avoid?", "What snack do you think is unhealthy?"] },
+  { normalPrompt: "What’s your favorite sport to watch?", impostorPrompts: ["What sport do you not understand?", "What sport do you find boring?"] },
+  { normalPrompt: "What’s your favorite TV show?", impostorPrompts: ["What TV show do you think is overrated?", "What show could you never get into?"] },
+  { normalPrompt: "What’s your favorite book or series?", impostorPrompts: ["What book do you regret reading?", "What’s a popular book you didn’t enjoy?"] },
+  { normalPrompt: "What’s your favorite ice cream flavor?", impostorPrompts: ["What ice cream flavor do you dislike?", "What flavor combination sounds awful?"] },
+  { normalPrompt: "What’s your favorite childhood memory?", impostorPrompts: ["What’s a childhood memory you’d rather forget?", "What’s a moment that embarrassed you as a kid?"] },
+  { normalPrompt: "What’s your favorite music genre?", impostorPrompts: ["What music genre do you skip?", "What type of music annoys you?"] },
+  { normalPrompt: "What’s your favorite restaurant?", impostorPrompts: ["What restaurant do you refuse to eat at?", "What restaurant disappointed you?"] },
+  { normalPrompt: "What’s your favorite outdoor activity?", impostorPrompts: ["What outdoor activity do you dislike?", "What’s something you’d never do outside?"] },
+  { normalPrompt: "What’s your favorite app on your phone?", impostorPrompts: ["What app do you find pointless?", "What app wastes your time?"] },
+  { normalPrompt: "What’s your favorite time of day?", impostorPrompts: ["What time of day do you hate waking up to?", "What’s the most unproductive time for you?"] }
+];
 
-//   // Make sure we always have a safe default array
-//   const allImpostorPrompts = [
-//     "What's a midnight snack that gives you the ick?",
-//     "What snack do you avoid before bed?",
-//     "What's the worst late-night craving you've had?",
-//     "What's a snack you regret eating at night?",
-//     "What food keeps you up at night?"
-//   ];
 
-//   // Shuffle and take as many impostor prompts as needed
-//   const shuffled = [...allImpostorPrompts];
-//   shuffleArray(shuffled);
-//   const selected = shuffled.slice(0, numImpostors);
+  // Pick one random set
+  const selected = questionPool[Math.floor(Math.random() * questionPool.length)];
 
-//   return {
-//     normalPrompt,
-//     impostorPrompts: selected
-//   };
-// }
+  // Select impostor prompts based on how many impostors exist
+  const shuffled = [...selected.impostorPrompts];
+  shuffleArray(shuffled);
+  const chosenImpostors = shuffled.slice(0, numImpostors);
+
+  return {
+    normalPrompt: selected.normalPrompt,
+    impostorPrompts: chosenImpostors
+  };
+}
+
 
 
 function generateRoomCode() {
