@@ -136,14 +136,14 @@ shuffleArray(roles); // ensures random impostor placement
   console.log(`🕵️ Impostors for room ${roomCode}:`, impostors);
 
   // Generate prompt
-  // const categories = ["opinion", "sensory", "cultural", "player-based"];
-  // const category = categories[Math.floor(Math.random() * categories.length)];
+  const categories = ["opinion", "sensory", "cultural", "player-based"];
+  const category = categories[Math.floor(Math.random() * categories.length)];
 
-  // // 🧠 Generate prompt from OpenAI
-  // const promptSet = await generatePromptSet(category, numImpostors);
-  // normalPrompt = promptSet.normal;
-  // impostorPrompts = promptSet.impostors;
-  const { normalPrompt, impostorPrompts } = generatePromptForRound(numImpostors);
+  // 🧠 Generate prompt from OpenAI
+  const promptSet = await generatePromptSet(category, numImpostors);
+  normalPrompt = promptSet.normal;
+  impostorPrompts = promptSet.impostors;
+  // const { normalPrompt, impostorPrompts } = generatePromptForRound(numImpostors);
   room.currentPrompt = normalPrompt
 
   // Send prompts individually
@@ -427,50 +427,28 @@ Output JSON in this format:
 }
 
 
-function generatePromptForRound(numImpostors) {
-  const questionPool = [
-  { normalPrompt: "Name a smell that instantly makes you nostalgic.", impostorPrompts: ["Name a smell that makes you uncomfortable.", "Name a smell you could never forget but for a bad reason."] },
-  { normalPrompt: "Describe the best meal you’ve ever had.", impostorPrompts: ["Describe a meal you regretted eating.", "Describe a food that looked great but tasted awful."] },
-  { normalPrompt: "What’s a song that instantly lifts your mood?", impostorPrompts: ["What’s a song that instantly annoys you?", "What’s a song people love but you skip?"] },
-  { normalPrompt: "Which place feels like home to you?", impostorPrompts: ["Which place makes you feel out of place?", "Which city did you never enjoy visiting?"] },
-  { normalPrompt: "What do you usually do to relax after a long day?", impostorPrompts: ["What’s something you do that accidentally makes your day worse?", "What do you do when you can’t unwind?"] },
-  { normalPrompt: "What’s a skill you’d love to master?", impostorPrompts: ["What’s a skill you have no interest in learning?", "What’s a skill you once tried and gave up on?"] },
-  { normalPrompt: "What’s an item you always carry with you?", impostorPrompts: ["What’s something you often forget to bring?", "What’s an item you used to carry but stopped?"] },
-  { normalPrompt: "If you could relive one moment from the past year, what would it be?", impostorPrompts: ["What’s one moment from the past year you wish you could forget?", "What’s one event you’d skip if you could redo it?"] },
-  { normalPrompt: "What’s a small daily habit that makes your day better?", impostorPrompts: ["What’s a habit that usually messes up your routine?", "What’s something you do out of habit even when it’s not helpful?"] },
-  { normalPrompt: "What’s something that instantly impresses you about people?", impostorPrompts: ["What’s something that instantly puts you off about people?", "What’s a habit people think is charming but you dislike?"] },
-  { normalPrompt: "Which kind of weather makes you feel energized?", impostorPrompts: ["Which kind of weather drains your energy?", "What weather instantly ruins your plans?"] },
-  { normalPrompt: "What’s a childhood game that brings back memories?", impostorPrompts: ["What’s a game you never enjoyed playing as a kid?", "What’s a game that confused you growing up?"] },
-  { normalPrompt: "What’s something you’d never get tired of doing?", impostorPrompts: ["What’s something that gets boring quickly for you?", "What’s something you’ve outgrown over time?"] },
-  { normalPrompt: "Who’s someone that inspires you to work harder?", impostorPrompts: ["Who’s someone that often drains your motivation?", "Who’s someone whose success feels unrelatable to you?"] },
-  { normalPrompt: "What’s an invention you think improved daily life?", impostorPrompts: ["What’s an invention that complicated life more than it helped?", "What’s a gadget you think people overuse?"] },
-  { normalPrompt: "Describe a sound that makes you feel calm.", impostorPrompts: ["Describe a sound that makes you anxious.", "Describe a sound you can’t stand hearing repeatedly."] },
-  { normalPrompt: "What’s a movie scene that always gives you chills?", impostorPrompts: ["What’s a movie scene that makes you cringe?", "What’s a moment in film you think is overrated?"] },
-  { normalPrompt: "What’s something that makes a person instantly trustworthy to you?", impostorPrompts: ["What’s something that instantly makes you suspicious of someone?", "What’s a behavior people think is polite but isn’t?"] },
-  { normalPrompt: "What’s a goal you’re currently working toward?", impostorPrompts: ["What’s a goal you abandoned recently?", "What’s a goal you keep postponing?"] },
-  { normalPrompt: "What’s a piece of advice that stuck with you?", impostorPrompts: ["What’s a piece of advice you ignored and don’t regret?", "What’s advice you hear often but don’t believe in?"] },
-  { normalPrompt: "What do you usually do first thing in the morning?", impostorPrompts: ["What’s something you often skip doing in the morning?", "What’s a morning habit you wish you could quit?"] },
-  { normalPrompt: "What’s something you’d like to learn purely for fun?", impostorPrompts: ["What’s something everyone seems to want to learn but you don’t care for?", "What’s something you tried learning and didn’t enjoy?"] },
-  { normalPrompt: "Describe a time you felt really proud of yourself.", impostorPrompts: ["Describe a time you felt embarrassed recently.", "Describe a time you failed but pretended you didn’t."] },
-  { normalPrompt: "What’s a smell that instantly reminds you of home?", impostorPrompts: ["What’s a smell that reminds you of somewhere unpleasant?", "What’s a smell that makes you feel uneasy?"] },
-  { normalPrompt: "What’s a trend or fad you never understood?", impostorPrompts: ["What’s a trend you secretly enjoyed but won’t admit?", "What’s a trend you joined even though you didn’t like it?"] }
-];
+// function generatePromptForRound(numImpostors) {
+//   const normalPrompt = "What's your go-to midnight snack?";
 
+//   // Make sure we always have a safe default array
+//   const allImpostorPrompts = [
+//     "What's a midnight snack that gives you the ick?",
+//     "What snack do you avoid before bed?",
+//     "What's the worst late-night craving you've had?",
+//     "What's a snack you regret eating at night?",
+//     "What food keeps you up at night?"
+//   ];
 
-  // Pick one random set
-  const selected = questionPool[Math.floor(Math.random() * questionPool.length)];
+//   // Shuffle and take as many impostor prompts as needed
+//   const shuffled = [...allImpostorPrompts];
+//   shuffleArray(shuffled);
+//   const selected = shuffled.slice(0, numImpostors);
 
-  // Select impostor prompts based on how many impostors exist
-  const shuffled = [...selected.impostorPrompts];
-  shuffleArray(shuffled);
-  const chosenImpostors = shuffled.slice(0, numImpostors);
-
-  return {
-    normalPrompt: selected.normalPrompt,
-    impostorPrompts: chosenImpostors
-  };
-}
-
+//   return {
+//     normalPrompt,
+//     impostorPrompts: selected
+//   };
+// }
 
 
 function generateRoomCode() {
