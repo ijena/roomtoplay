@@ -5,53 +5,177 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>RoomToPlay 🎮</title>
   <style>
+    :root {
+      --bg: #0d0d1a;
+      --card: #1a1a2e;
+      --card-border: #2a2a4a;
+      --accent: #7c5cbf;
+      --accent-hover: #9b7de0;
+      --text: #e8e8f0;
+      --text-muted: #8888aa;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      font-family: 'Segoe UI', sans-serif;
-      text-align: center;
-      background: linear-gradient(135deg, #ece9e6, #ffffff);
-      padding: 3em;
-    }
-    h1 {
-      font-size: 2.5em;
-      margin-bottom: 0.5em;
-    }
-    .game-list {
-      margin-top: 2em;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 1em;
+      justify-content: center;
+      padding: 2em 1em;
     }
-    .game-link {
-      background: #007bff;
-      color: white;
+
+    .container {
+      max-width: 480px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .logo {
+      font-size: 3em;
+      margin-bottom: 0.2em;
+    }
+
+    h1 {
+      font-size: 2em;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.3em;
+      background: linear-gradient(135deg, #9b7de0, #c0a9f5);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .tagline {
+      color: var(--text-muted);
+      font-size: 1em;
+      margin-bottom: 2.5em;
+    }
+
+    .section-label {
+      font-size: 0.75em;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 1em;
+    }
+
+    .game-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8em;
+    }
+
+    .game-card {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 1.2em 1.5em;
       text-decoration: none;
-      padding: 1em 2em;
-      border-radius: 10px;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 1em;
+      transition: border-color 0.2s, transform 0.15s;
+      text-align: left;
+    }
+
+    .game-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .game-icon {
+      font-size: 2em;
+      flex-shrink: 0;
+    }
+
+    .game-info h2 {
+      font-size: 1em;
+      font-weight: 600;
+      margin-bottom: 0.2em;
+    }
+
+    .game-info p {
+      font-size: 0.85em;
+      color: var(--text-muted);
+    }
+
+    .game-card .arrow {
+      margin-left: auto;
+      color: var(--text-muted);
       font-size: 1.2em;
-      transition: background 0.3s;
-      width: 260px;
     }
-    .game-link:hover {
-      background: #0056b3;
+
+    .game-card:hover .arrow {
+      color: var(--accent-hover);
     }
+
+    .coming-soon {
+      background: var(--card);
+      border: 1px dashed var(--card-border);
+      border-radius: 14px;
+      padding: 1.2em 1.5em;
+      display: flex;
+      align-items: center;
+      gap: 1em;
+      opacity: 0.5;
+    }
+
+    .badge {
+      font-size: 0.7em;
+      background: var(--card-border);
+      color: var(--text-muted);
+      padding: 2px 8px;
+      border-radius: 20px;
+      margin-left: 0.5em;
+    }
+
     footer {
       margin-top: 3em;
-      color: #555;
-      font-size: 0.9em;
+      color: var(--text-muted);
+      font-size: 0.85em;
+    }
+
+    @media (max-width: 400px) {
+      h1 { font-size: 1.6em; }
+      .logo { font-size: 2.5em; }
     }
   </style>
 </head>
 <body>
-  <h1>🎮 RoomToPlay</h1>
-  <p>Welcome! Choose a game to start playing with your friends.</p>
+  <div class="container">
+    <div class="logo">🎮</div>
+    <h1>RoomToPlay</h1>
+    <p class="tagline">Party games for you and your friends</p>
 
-  <div class="game-list">
-    <a href="/impostor/index.html" class="game-link">🕵️ Who’s the Impostor</a>
-    <!-- Future games can go here -->
-    <!-- <a href="/trivia/index.html" class="game-link">❓ Trivia Clash</a> -->
+    <p class="section-label">Choose a game</p>
+
+    <div class="game-list">
+      <a href="/impostor/index.html" class="game-card">
+        <span class="game-icon">🕵️</span>
+        <div class="game-info">
+          <h2>Who's the Impostor?</h2>
+          <p>Find the odd one out before they fool everyone</p>
+        </div>
+        <span class="arrow">›</span>
+      </a>
+
+      <div class="coming-soon">
+        <span class="game-icon">❓</span>
+        <div class="game-info">
+          <h2>Trivia Clash <span class="badge">Soon</span></h2>
+          <p>Test your knowledge against friends</p>
+        </div>
+      </div>
+    </div>
+
+    <footer>Made with ❤️ by RoomToPlay</footer>
   </div>
-
-  <footer>Created with ❤️ by RoomToPlay</footer>
 </body>
 </html>
