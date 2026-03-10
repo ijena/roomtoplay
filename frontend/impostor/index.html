@@ -3,277 +3,798 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>RoomToPlay: Impostor Game</title>
+  <title>RoomToPlay: Find the Impostor</title>
   <style>
-    body { font-family: sans-serif; text-align: center; padding: 2em; }
+    :root {
+      --bg: #0d0d1a;
+      --card: #1a1a2e;
+      --card-border: #2a2a4a;
+      --accent: #7c5cbf;
+      --accent-hover: #9b7de0;
+      --danger: #e05c5c;
+      --danger-hover: #f07070;
+      --success: #4caf7d;
+      --text: #e8e8f0;
+      --text-muted: #8888aa;
+      --input-bg: #0d0d1a;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 1.5em 1em;
+    }
+
+    .container {
+      max-width: 560px;
+      margin: 0 auto;
+    }
+
+    /* ── Header ── */
+    .page-header {
+      text-align: center;
+      padding: 0.5em 0 1.5em;
+    }
+    .page-header .logo { font-size: 2em; }
+    .page-header h1 {
+      font-size: 1.5em;
+      font-weight: 700;
+      margin-top: 0.2em;
+      background: linear-gradient(135deg, #9b7de0, #c0a9f5);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ── Screens ── */
     .screen { display: none; }
     .active { display: block; }
-    input, button { padding: 10px; margin: 5px; font-size: 16px; }
-    #promptBox { margin-top: 2em; font-size: 1.2em; font-weight: bold; white-space: pre-wrap; }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 1.4em;
+      margin-bottom: 0.8em;
+    }
+    .card-title {
+      font-size: 1em;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.75em;
+      margin-bottom: 1em;
+    }
+    .card h2 {
+      font-size: 1.3em;
+      font-weight: 700;
+      margin-bottom: 0.8em;
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 13px 20px;
+      border: none;
+      border-radius: 9px;
+      font-size: 1em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      margin-bottom: 0.5em;
+      text-align: center;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--card-border);
+    }
+    .btn-secondary:hover { border-color: var(--accent); color: var(--accent-hover); }
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
+    .btn-danger:hover { background: var(--danger-hover); }
+    .btn-sm {
+      display: inline-block;
+      width: auto;
+      padding: 8px 16px;
+      font-size: 0.9em;
+      margin-bottom: 0;
+    }
+    .btn-row {
+      display: flex;
+      gap: 0.5em;
+    }
+    .btn-row .btn { margin-bottom: 0; }
+
+    /* ── Back link ── */
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3em;
+      color: var(--text-muted);
+      font-size: 0.9em;
+      cursor: pointer;
+      margin-bottom: 1em;
+      background: none;
+      border: none;
+      padding: 0;
+    }
+    .back-link:hover { color: var(--text); }
+
+    /* ── Inputs ── */
+    .form-group { margin-bottom: 0.8em; }
+    .form-label {
+      display: block;
+      font-size: 0.85em;
+      color: var(--text-muted);
+      margin-bottom: 0.4em;
+    }
+    input[type="text"], select {
+      width: 100%;
+      padding: 12px 14px;
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 1em;
+      transition: border-color 0.2s;
+    }
+    input[type="text"]:focus, select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    input:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    select option { background: var(--card); }
+
+    /* ── Room info bar ── */
+    .room-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.5em;
+      margin-bottom: 0.8em;
+    }
+    .room-code-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5em;
+      background: var(--accent);
+      color: white;
+      font-size: 1.3em;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      padding: 6px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      border: none;
+      transition: background 0.2s;
+    }
+    .room-code-badge:hover { background: var(--accent-hover); }
+    .room-code-badge .copy-icon { font-size: 0.7em; opacity: 0.8; }
+    .player-name-tag {
+      font-size: 0.9em;
+      color: var(--text-muted);
+    }
+    .player-name-tag strong { color: var(--text); }
+
+    /* ── Player chips ── */
+    .player-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4em;
+      margin-top: 0.3em;
+    }
+    .player-chip {
+      background: var(--card-border);
+      border-radius: 20px;
+      padding: 5px 12px;
+      font-size: 0.85em;
+    }
+
+    /* ── Settings row ── */
+    .settings-row {
+      display: flex;
+      align-items: center;
+      gap: 0.8em;
+    }
+    .settings-row label {
+      font-size: 0.9em;
+      color: var(--text-muted);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .settings-row select { margin-bottom: 0; flex: 1; }
+    .settings-badge {
+      font-size: 0.85em;
+      color: var(--text-muted);
+    }
+
+    /* ── Prompt card ── */
+    .prompt-card {
+      background: linear-gradient(135deg, #150e28, #1c1636);
+      border: 1px solid var(--accent);
+      border-radius: 12px;
+      padding: 1.2em;
+      margin-bottom: 0.8em;
+    }
+    .prompt-label {
+      font-size: 0.75em;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent-hover);
+      margin-bottom: 0.5em;
+    }
+    .prompt-text {
+      font-size: 1.2em;
+      font-weight: 600;
+      color: #d4bcff;
+      line-height: 1.4;
+      white-space: pre-wrap;
+    }
+
+    /* ── Answer section ── */
+    .answer-section { margin-bottom: 0.8em; }
+
+    /* ── Answers reveal ── */
+    .answers-list { margin-top: 0.3em; }
+    .answer-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 10px 12px;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      margin-bottom: 0.4em;
+    }
+    .answer-item .player-name { font-weight: 600; }
+    .answer-item .answer-text { color: var(--text-muted); font-size: 0.95em; text-align: right; }
+
+    /* ── Vote section ── */
+    .vote-option {
+      display: flex;
+      align-items: center;
+      gap: 0.8em;
+      padding: 11px 14px;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      margin-bottom: 0.4em;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .vote-option:hover { border-color: var(--accent); background: rgba(124, 92, 191, 0.08); }
+    .vote-option input {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent);
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .vote-option label {
+      cursor: pointer;
+      font-size: 0.95em;
+    }
+
+    /* ── Results ── */
+    .result-section { margin-bottom: 0.8em; }
+    .tally-item {
+      display: flex;
+      align-items: center;
+      gap: 0.8em;
+      padding: 8px 0;
+    }
+    .tally-name { min-width: 100px; font-size: 0.9em; }
+    .tally-bar-wrap {
+      flex: 1;
+      background: var(--card-border);
+      border-radius: 4px;
+      height: 8px;
+      overflow: hidden;
+    }
+    .tally-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 4px;
+      transition: width 0.6s ease;
+    }
+    .tally-count { font-size: 0.85em; color: var(--text-muted); min-width: 50px; text-align: right; }
+    .reveal-tag {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.8em;
+      font-weight: 600;
+    }
+    .reveal-tag.top-voted { background: rgba(124, 92, 191, 0.25); color: var(--accent-hover); }
+    .reveal-tag.impostor { background: rgba(224, 92, 92, 0.25); color: var(--danger-hover); }
+
+    /* ── Scoreboard ── */
+    .score-item {
+      display: flex;
+      align-items: center;
+      gap: 0.8em;
+      padding: 10px 12px;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      margin-bottom: 0.4em;
+    }
+    .score-rank { font-size: 1.1em; min-width: 2em; text-align: center; }
+    .score-name { flex: 1; font-weight: 600; }
+    .score-pts { font-weight: 700; }
+    .score-delta {
+      font-size: 0.85em;
+      min-width: 3.5em;
+      text-align: right;
+    }
+    .score-delta.positive { color: var(--success); }
+    .score-delta.negative { color: var(--danger); }
+    .score-delta.neutral { color: var(--text-muted); }
+
+    /* ── Toast notifications ── */
+    .toast-container {
+      position: fixed;
+      top: 1em;
+      right: 1em;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5em;
+      pointer-events: none;
+    }
+    .toast {
+      padding: 11px 16px;
+      border-radius: 9px;
+      color: white;
+      font-size: 0.9em;
+      font-weight: 500;
+      max-width: 300px;
+      animation: toastIn 0.3s ease;
+      pointer-events: auto;
+    }
+    .toast.error { background: var(--danger); }
+    .toast.info { background: #2a4080; }
+    .toast.success { background: var(--success); }
+    @keyframes toastIn {
+      from { transform: translateX(110%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes toastOut {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(110%); opacity: 0; }
+    }
+
+    /* ── Divider ── */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--card-border);
+      margin: 0.8em 0;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 480px) {
+      body { padding: 1em 0.8em; }
+      .page-header h1 { font-size: 1.3em; }
+      .btn-row { flex-direction: column; }
+      .settings-row { flex-direction: column; align-items: stretch; }
+    }
   </style>
 </head>
 <body>
-  <h1>🕵️ RoomToPlay: Find the Impostor</h1>
+  <div class="toast-container" id="toastContainer"></div>
 
-  <!-- Home Screen -->
-  <div id="homeScreen" class="screen active">
-    <button onclick="showScreen('createScreen')">Create Room</button>
-    <button onclick="showScreen('joinScreen')">Join Room</button>
+  <div class="container">
+    <div class="page-header">
+      <div class="logo">🕵️</div>
+      <h1>Find the Impostor</h1>
+    </div>
+
+    <!-- Home Screen -->
+    <div id="homeScreen" class="screen active">
+      <div class="card">
+        <h2>Welcome!</h2>
+        <p style="color: var(--text-muted); margin-bottom: 1.2em; font-size: 0.95em;">
+          One player gets a different prompt — can you figure out who?
+        </p>
+        <button class="btn btn-primary" onclick="showScreen('createScreen')">Create Room</button>
+        <button class="btn btn-secondary" onclick="showScreen('joinScreen')">Join Room</button>
+      </div>
+    </div>
+
+    <!-- Create Room Screen -->
+    <div id="createScreen" class="screen">
+      <button class="back-link" onclick="showScreen('homeScreen')">← Back</button>
+      <div class="card">
+        <h2>Create a Room</h2>
+        <div class="form-group">
+          <label class="form-label" for="createName">Your name</label>
+          <input type="text" id="createName" placeholder="e.g. Alex" maxlength="20" />
+        </div>
+        <button class="btn btn-primary" onclick="createRoom()">Create Room</button>
+      </div>
+    </div>
+
+    <!-- Join Room Screen -->
+    <div id="joinScreen" class="screen">
+      <button class="back-link" onclick="showScreen('homeScreen')">← Back</button>
+      <div class="card">
+        <h2>Join a Room</h2>
+        <div class="form-group">
+          <label class="form-label" for="joinName">Your name</label>
+          <input type="text" id="joinName" placeholder="e.g. Alex" maxlength="20" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="joinCode">Room code</label>
+          <input type="text" id="joinCode" placeholder="e.g. ABCD" maxlength="6"
+            style="text-transform: uppercase; letter-spacing: 0.15em; font-weight: 700;" />
+        </div>
+        <button class="btn btn-primary" onclick="joinRoom()">Join Room</button>
+      </div>
+    </div>
+
+    <!-- Lobby / Game Screen -->
+    <div id="lobbyScreen" class="screen">
+
+      <!-- Room info -->
+      <div class="card">
+        <div class="room-bar">
+          <div>
+            <div style="font-size: 0.75em; color: var(--text-muted); margin-bottom: 0.3em; text-transform: uppercase; letter-spacing: 0.08em;">Room Code</div>
+            <button class="room-code-badge" id="roomCodeBadge" onclick="copyRoomCode()" title="Click to copy">
+              <span id="roomCodeText">—</span>
+              <span class="copy-icon">📋</span>
+            </button>
+          </div>
+          <div class="player-name-tag">Playing as<br><strong id="playerNameTag">—</strong></div>
+        </div>
+
+        <!-- Player list -->
+        <div>
+          <div style="font-size: 0.75em; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.5em;">
+            Players (<span id="playerCount">0</span>)
+          </div>
+          <div id="playerList" class="player-chips"></div>
+        </div>
+      </div>
+
+      <!-- Settings (host only) -->
+      <div id="hostControls" class="card" style="display: none;">
+        <div class="card-title">Host Controls</div>
+        <div class="settings-row" style="margin-bottom: 1em;">
+          <label for="impostorModeSelect">Impostor Mode</label>
+          <select id="impostorModeSelect" onchange="updateImpostorSetting()">
+            <option value="variable">Variable Impostors</option>
+            <option value="one">One Impostor</option>
+          </select>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="startRound()">▶ Next Round</button>
+          <button class="btn btn-secondary" onclick="skipPrompt()">⟳ Skip Question</button>
+        </div>
+      </div>
+
+      <!-- Settings display (non-host) -->
+      <div id="currentSettings" class="settings-badge" style="margin-bottom: 0.8em;"></div>
+
+      <!-- Prompt -->
+      <div id="promptBox"></div>
+
+      <!-- Answer section -->
+      <div id="answerSection" class="card answer-section" style="display: none;">
+        <div class="card-title">Your Answer</div>
+        <div class="form-group" style="margin-bottom: 0.8em;">
+          <input type="text" id="answerInput" placeholder="Type your answer…" />
+        </div>
+        <button class="btn btn-primary" onclick="submitAnswer()">Submit Answer</button>
+      </div>
+
+      <!-- Answers reveal -->
+      <div id="answersReveal"></div>
+
+      <!-- Vote section -->
+      <div id="voteSection" class="card" style="display: none;">
+        <div class="card-title">Vote</div>
+        <h2 style="font-size: 1em; margin-bottom: 0.8em;">Who do you think is the impostor?</h2>
+        <form id="voteForm"></form>
+        <button class="btn btn-danger" style="margin-top: 0.8em;" onclick="submitVote()">Submit Vote</button>
+      </div>
+
+      <!-- Scoreboard -->
+      <div id="scoreBoard"></div>
+
+    </div>
   </div>
-
-  <!-- Create Room Screen -->
-  <div id="createScreen" class="screen">
-    <h2>Create Room</h2>
-    <input type="text" id="createName" placeholder="Your name" />
-    <button onclick="createRoom()">Create</button>
-  </div>
-
-  <!-- Join Room Screen -->
-  <div id="joinScreen" class="screen">
-    <h2>Join Room</h2>
-    <input type="text" id="joinName" placeholder="Your name" />
-    <input type="text" id="joinCode" placeholder="Room code" />
-    <button onclick="joinRoom()">Join</button>
-  </div>
-
-  <!-- Lobby/Game Screen -->
-  <div id="lobbyScreen" class="screen">
-    <h2>Game Lobby</h2>
-    <p id="roomInfo"></p>
-    <div id="playerList"></div>
-    <div id="currentSettings"></div>
-    <div id="hostControls" style="display: none;">
-  <label for="impostorModeSelect"><strong>Impostor Mode:</strong></label>
-  <select id="impostorModeSelect" onchange="updateImpostorSetting()">
-    <option value="variable">Variable Impostors</option>
-    <option value="one">One Impostor</option>
-  </select>
-  <br>
-  <button onclick="startRound()">Next Round</button>
-  <button onclick="skipPrompt()">Skip Question</button>
-
-</div>
-
-    <div id="promptBox"></div>
-  <div id="answerSection" style="margin-top: 20px; display: none;">
-  <input type="text" id="answerInput" placeholder="Type your answer..." />
-  <button onclick="submitAnswer()">Submit Answer</button>
-</div>
-
-<div id="answersReveal" style="margin-top: 30px;"></div>
-
-<div id="voteSection" style="display: none;">
-  <h3>Vote: Who do you think is the impostor?</h3>
-  <form id="voteForm"></form>
-  <button onclick="submitVote()">Submit Vote</button>
-</div>
-<div id="scoreBoard" style="margin-top: 20px;"></div>
-
-</div>
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const socket = io("/impostor");
     let playerName = "";
     let roomCode = "";
-    let allPlayers = []; // 🆕 to store players for voting
-    let impostorMode = "variable"; // Default mode
+    let allPlayers = [];
+    let impostorMode = "variable";
 
+    // ── Toast notifications ──
+    function showToast(message, type = "info", duration = 4000) {
+      const container = document.getElementById("toastContainer");
+      const toast = document.createElement("div");
+      toast.className = `toast ${type}`;
+      toast.textContent = message;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.animation = "toastOut 0.3s ease forwards";
+        setTimeout(() => toast.remove(), 300);
+      }, duration);
+    }
+
+    // ── Copy room code ──
+    function copyRoomCode() {
+      if (!roomCode) return;
+      navigator.clipboard.writeText(roomCode).then(() => {
+        showToast("Room code copied!", "success", 2000);
+      }).catch(() => {
+        showToast(`Room code: ${roomCode}`, "info");
+      });
+    }
+
+    // ── Screen switching ──
     function showScreen(screenId) {
       document.querySelectorAll('.screen').forEach(div => div.classList.remove('active'));
       document.getElementById(screenId).classList.add('active');
     }
 
+    // ── Create room ──
     function createRoom() {
       playerName = document.getElementById("createName").value.trim();
-      if (!playerName) return alert("Enter your name.");
+      if (!playerName) return showToast("Please enter your name.", "error");
       socket.emit("create-room", { playerName });
     }
 
+    // ── Join room ──
     function joinRoom() {
       playerName = document.getElementById("joinName").value.trim();
       roomCode = document.getElementById("joinCode").value.trim().toUpperCase();
-      if (!playerName || !roomCode) return alert("Fill in both fields.");
+      if (!playerName || !roomCode) return showToast("Please fill in both fields.", "error");
       socket.emit("join", { playerName, roomCode });
     }
+
+    // ── Update player list ──
     function updatePlayerList(players) {
-        allPlayers = players; // Store for voting later
-  const list = players.map(p => `• ${p.name}`).join("<br>");
-  document.getElementById("playerList").innerHTML = `<strong>Players:</strong><br>${list}`;
-}
-
-
-    function startRound() {
-      socket.emit("start-round");
+      allPlayers = players;
+      document.getElementById("playerCount").textContent = players.length;
+      const chips = players.map(p => `<span class="player-chip">${escHtml(p.name)}</span>`).join("");
+      document.getElementById("playerList").innerHTML = chips;
     }
+
+    // ── Escape HTML ──
+    function escHtml(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    // ── Game controls ──
+    function startRound() { socket.emit("start-round"); }
+
     function updateImpostorSetting() {
-  const selected = document.getElementById("impostorModeSelect").value;
-  socket.emit("update-settings", { impostorMode: selected });
-}
-
-function updateCurrentSettings(settings) {
-  impostorMode = settings.impostorMode; // ✅ Keeps local copy in sync
-
-  const modeText = settings.impostorMode === "one" ? "One Impostor" : "Variable Impostors";
-  document.getElementById("currentSettings").innerHTML = `<em>Impostor Mode: ${modeText}</em>`;
-  document.getElementById("impostorModeSelect").value = settings.impostorMode;
-}
-function skipPrompt() {
-  socket.emit("start-round");
-}
-function submitAnswer() {
-  const answer = document.getElementById("answerInput").value.trim();
-  if (!answer) return alert("Enter an answer first.");
-  socket.emit("submit-answer", { answer });
-  document.getElementById("answerInput").disabled = true;
-}
-function renderVotingForm() {
-  const form = document.getElementById("voteForm");
-  form.innerHTML = ""; // Reset votes every round
-
-  allPlayers.forEach((p) => {
-    if (p.name !== playerName) {
-      const input = document.createElement("input");
-      input.type = impostorMode === "one" ? "radio" : "checkbox";
-      input.name = "vote";
-      input.value = p.name;
-      input.id = `vote-${p.name}`;
-
-      const label = document.createElement("label");
-      label.htmlFor = input.id;
-      label.textContent = p.name;
-
-      form.appendChild(input);
-      form.appendChild(label);
+      const selected = document.getElementById("impostorModeSelect").value;
+      socket.emit("update-settings", { impostorMode: selected });
     }
-  });
 
-  document.getElementById("voteSection").style.display = "block";
-}
-function submitVote() {
-  const form = document.getElementById("voteForm");
-  const votes = Array.from(form.querySelectorAll("input:checked")).map((input) => input.value);
-  if (votes.length === 0 && impostorMode=="one") return alert("Please select at least one player.");
-  socket.emit("submit-vote", { votes });
-  document.getElementById("voteSection").style.display = "none";
-}
+    function updateCurrentSettings(settings) {
+      impostorMode = settings.impostorMode;
+      const modeText = settings.impostorMode === "one" ? "One Impostor" : "Variable Impostors";
+      document.getElementById("currentSettings").innerHTML = `<em>⚙️ Impostor Mode: ${modeText}</em>`;
+      const sel = document.getElementById("impostorModeSelect");
+      if (sel) sel.value = settings.impostorMode;
+    }
 
+    function skipPrompt() { socket.emit("start-round"); }
 
+    function submitAnswer() {
+      const answer = document.getElementById("answerInput").value.trim();
+      if (!answer) return showToast("Please enter an answer first.", "error");
+      socket.emit("submit-answer", { answer });
+      document.getElementById("answerInput").disabled = true;
+      document.querySelector("#answerSection .btn").disabled = true;
+      document.querySelector("#answerSection .btn").textContent = "Answer submitted ✓";
+    }
 
+    function renderVotingForm() {
+      const form = document.getElementById("voteForm");
+      form.innerHTML = "";
+      allPlayers.forEach((p) => {
+        if (p.name !== playerName) {
+          const wrapper = document.createElement("div");
+          wrapper.className = "vote-option";
 
+          const input = document.createElement("input");
+          input.type = impostorMode === "one" ? "radio" : "checkbox";
+          input.name = "vote";
+          input.value = p.name;
+          input.id = `vote-${p.name}`;
 
-    // Reconnect support
+          const label = document.createElement("label");
+          label.htmlFor = input.id;
+          label.textContent = p.name;
+
+          wrapper.appendChild(input);
+          wrapper.appendChild(label);
+          wrapper.addEventListener("click", (e) => {
+            if (e.target !== input) input.click();
+          });
+          form.appendChild(wrapper);
+        }
+      });
+      document.getElementById("voteSection").style.display = "block";
+    }
+
+    function submitVote() {
+      const form = document.getElementById("voteForm");
+      const votes = Array.from(form.querySelectorAll("input:checked")).map(i => i.value);
+      if (votes.length === 0 && impostorMode === "one") return showToast("Please select a player to vote for.", "error");
+      socket.emit("submit-vote", { votes });
+      document.getElementById("voteSection").style.display = "none";
+    }
+
+    // ── Socket events ──
     socket.on("connect", () => {
       if (playerName && roomCode) {
         socket.emit("rejoin-room", { playerName, roomCode });
       }
     });
 
-    socket.on("room-created", ({ roomCode: code,players }) => {
+    socket.on("room-created", ({ roomCode: code, players }) => {
       roomCode = code;
-      document.getElementById("roomInfo").innerText = `Room Code: ${roomCode} | You: ${playerName}`;
-    updatePlayerList(players);
-
+      document.getElementById("roomCodeText").textContent = roomCode;
+      document.getElementById("playerNameTag").textContent = playerName;
+      updatePlayerList(players);
       showScreen("lobbyScreen");
     });
 
-    socket.on("joined-room", ({ roomCode: code,players }) => {
+    socket.on("joined-room", ({ roomCode: code, players }) => {
       roomCode = code;
-      document.getElementById("roomInfo").innerText = `Room: ${roomCode} | You: ${playerName}`;
+      document.getElementById("roomCodeText").textContent = roomCode;
+      document.getElementById("playerNameTag").textContent = playerName;
       updatePlayerList(players);
-
       showScreen("lobbyScreen");
     });
 
     socket.on("host-assigned", ({ message }) => {
       document.getElementById("hostControls").style.display = "block";
+      showToast("You are the host!", "success");
       console.log(message);
     });
 
     socket.on("prompt", ({ prompt }) => {
-  document.getElementById("promptBox").innerText = `Your prompt:\n${prompt}`;
-  document.getElementById("answerSection").style.display = "block";
-  document.getElementById("answerInput").value = "";
-  document.getElementById("answerInput").disabled = false;
-  document.getElementById("answersReveal").innerHTML = "";
-});
+      document.getElementById("promptBox").innerHTML = `
+        <div class="prompt-card">
+          <div class="prompt-label">Your Prompt</div>
+          <div class="prompt-text">${escHtml(prompt)}</div>
+        </div>`;
+      const section = document.getElementById("answerSection");
+      section.style.display = "block";
+      document.getElementById("answerInput").value = "";
+      document.getElementById("answerInput").disabled = false;
+      const btn = section.querySelector(".btn");
+      btn.disabled = false;
+      btn.textContent = "Submit Answer";
+      document.getElementById("answersReveal").innerHTML = "";
+      document.getElementById("voteSection").style.display = "none";
+    });
 
-   socket.on("update-players", (players) => {
-  allPlayers = players; // ✅ Make sure everyone’s copy of allPlayers stays synced
-  const list = players.map(p => `• ${p.name}`).join("<br>");
-  document.getElementById("playerList").innerHTML = `<strong>Players:</strong><br>${list}`;
-});
+    socket.on("update-players", (players) => {
+      allPlayers = players;
+      document.getElementById("playerCount").textContent = players.length;
+      const chips = players.map(p => `<span class="player-chip">${escHtml(p.name)}</span>`).join("");
+      document.getElementById("playerList").innerHTML = chips;
+    });
 
     socket.on("settings-updated", (settings) => {
-  updateCurrentSettings(settings);
-  impostorMode = settings.impostorMode; // Store for voting logic
-});
+      updateCurrentSettings(settings);
+      impostorMode = settings.impostorMode;
+    });
 
-socket.on("reveal-answers", ({ answers, question }) => {
-  let html = `<h3> Non Impostor Question: ${question}</h3><h3>Everyone's Answers:</h3><ul>`;
-  for (const { name, answer } of Object.values(answers)) {
-    html += `<li><strong>${name}:</strong> ${answer}</li>`;
-  }
-  html += "</ul>";
-  document.getElementById("answersReveal").innerHTML = html;
+    socket.on("reveal-answers", ({ answers, question }) => {
+      let html = `<div class="card result-section">
+        <div class="card-title">Everyone's Answers</div>
+        <p style="font-size: 0.85em; color: var(--text-muted); margin-bottom: 0.8em;">
+          Non-impostor question: <strong style="color: var(--text);">${escHtml(question)}</strong>
+        </p>
+        <div class="answers-list">`;
+      for (const { name, answer } of Object.values(answers)) {
+        html += `<div class="answer-item">
+          <span class="player-name">${escHtml(name)}</span>
+          <span class="answer-text">${escHtml(answer)}</span>
+        </div>`;
+      }
+      html += `</div></div>`;
+      document.getElementById("answersReveal").innerHTML = html;
+      renderVotingForm();
+    });
 
-  // Now show the vote form
-  renderVotingForm();
-});
+    socket.on("vote-results", ({ question, votesByPlayer, topVoted, impostors, tally }) => {
+      // Find max votes for bar scaling
+      const counts = Object.values(tally || {});
+      const maxVotes = counts.length ? Math.max(...counts) : 1;
 
+      let html = `<div class="card result-section">
+        <div class="card-title">Vote Results</div>`;
 
-socket.on("vote-results", ({ question, votesByPlayer, topVoted, impostors, tally }) => {
-let  html = `<h3>🗳️ Player Votes:</h3><ul>`;
+      // Tally with bars
+      if (tally && Object.keys(tally).length) {
+        html += `<div style="margin-bottom: 1em;">`;
+        for (const [name, count] of Object.entries(tally)) {
+          const pct = maxVotes > 0 ? Math.round((count / maxVotes) * 100) : 0;
+          html += `<div class="tally-item">
+            <span class="tally-name">${escHtml(name)}</span>
+            <div class="tally-bar-wrap"><div class="tally-fill" style="width:${pct}%"></div></div>
+            <span class="tally-count">${count} vote${count !== 1 ? "s" : ""}</span>
+          </div>`;
+        }
+        html += `</div>`;
+      }
 
-  for (const [player, votes] of Object.entries(votesByPlayer)) {
-    html += `<li><strong>${player}</strong> voted for: ${votes.length ? votes.join(", ") : "None"}</li>`;
-  }
-  html += `</ul>`;
-  // 🧮 Show tally summary
-  html += `<h3>📊 Tally:</h3><ul>`;
-  for (const [name, count] of Object.entries(tally || {})) {
-    html += `<li>${name}: ${count} vote${count !== 1 ? "s" : ""}</li>`;
-  }
-  // 🏆 Show top votes
-  if (topVoted && topVoted.length > 0) {
-    html += `<p><strong>⚖️ Top-Voted:</strong> ${topVoted.join(", ")}</p>`;
-  } else {
-    html += `<p><strong>⚖️ Top-Voted:</strong> None</p>`;
-  }
+      // Top voted & impostors
+      html += `<div style="display: flex; gap: 0.5em; flex-wrap: wrap; margin-bottom: 0.8em;">`;
+      if (topVoted && topVoted.length > 0) {
+        html += `<span class="reveal-tag top-voted">⚖️ Top-Voted: ${topVoted.map(escHtml).join(", ")}</span>`;
+      }
+      html += `<span class="reveal-tag impostor">🕵️ Impostors: ${
+        impostors.length ? impostors.map(escHtml).join(", ") : "None this round"
+      }</span></div>`;
 
-  // 🕵️ Show impostors even if empty
-  html += `<p><strong>🕵️ Actual Impostors:</strong> ${
-    impostors.length ? impostors.join(", ") : "None this round"
-  }</p>`;
+      // Who voted for who
+      html += `<hr class="divider"><div style="font-size: 0.8em; color: var(--text-muted); margin-bottom: 0.4em; text-transform: uppercase; letter-spacing: 0.08em;">Individual Votes</div><ul style="list-style: none;">`;
+      for (const [player, votes] of Object.entries(votesByPlayer)) {
+        html += `<li style="padding: 4px 0; font-size: 0.9em;">
+          <strong>${escHtml(player)}</strong>
+          <span style="color: var(--text-muted);"> → ${votes.length ? votes.map(escHtml).join(", ") : "No vote"}</span>
+        </li>`;
+      }
+      html += `</ul></div>`;
+      document.getElementById("answersReveal").innerHTML += html;
+    });
 
-  
-  html += `</ul>`;
+    socket.on("score-update", ({ totals, deltas }) => {
+      // Sort players by score descending
+      const sorted = [...allPlayers].sort((a, b) => (totals[b.id] || 0) - (totals[a.id] || 0));
+      const medals = ["🥇", "🥈", "🥉"];
 
-  document.getElementById("answersReveal").innerHTML = html;
-});
+      let html = `<div class="card">
+        <div class="card-title">Scoreboard</div>`;
+      sorted.forEach((player, i) => {
+        const total = totals[player.id] || 0;
+        const delta = deltas[player.id] || 0;
+        const sign = delta > 0 ? "+" : (delta < 0 ? "−" : "±");
+        const deltaClass = delta > 0 ? "positive" : (delta < 0 ? "negative" : "neutral");
+        const rank = medals[i] || `${i + 1}.`;
+        html += `<div class="score-item">
+          <span class="score-rank">${rank}</span>
+          <span class="score-name">${escHtml(player.name)}</span>
+          <span class="score-pts">${total} pts</span>
+          <span class="score-delta ${deltaClass}">${sign}${Math.abs(delta)}</span>
+        </div>`;
+      });
+      html += `</div>`;
+      document.getElementById("scoreBoard").innerHTML = html;
+    });
 
-
-
-socket.on("score-update", ({ totals, deltas }) => {
-  let html = "<h3>🏆 Scores</h3><ul>";
-  for (const player of allPlayers) {
-    const total = totals[player.id] || 0;
-    const delta = deltas[player.id] || 0;
-    const sign = delta > 0 ? "+" : (delta < 0 ? "–" : "±0");
-    html += `<li>${player.name}: ${total} pts <span style="color:gray;">(${sign}${Math.abs(delta)})</span></li>`;
-  }
-  html += "</ul>";
-  document.getElementById("scoreBoard").innerHTML = html;
-});
-
-
-
-
-
-
-
-    socket.on("error", (msg) => alert("❌ " + msg));
-    
+    socket.on("error", (msg) => showToast("❌ " + msg, "error"));
   </script>
 </body>
 </html>
