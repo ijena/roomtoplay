@@ -232,90 +232,75 @@ namespace.to(roomCode).emit("vote-results", {
 if (!room.scores) room.scores = {};
 const impostorMode = room.settings?.impostorMode || "variable";
 
-
-// ✅ get impostor names from last round (stored on room object)
-//const impostorNames = room.lastImpostors || [];
-const impostors = room.lastImpostors || [];
-const impostorNames = topVoted || [];
+const actualImpostors = room.lastImpostors || [];
+const topVotedPlayers = topVoted || [];
 
 // Map player roles
 const playerRoles = {};
 room.players.forEach(p => {
-  playerRoles[p.name] = impostors.includes(p.name) ? "impostor" : "normal";
+  playerRoles[p.name] = actualImpostors.includes(p.name) ? "impostor" : "normal";
 });
 
-// Build vote counts
-const votesReceived = {};
-Object.values(room.votes || {}).flat().forEach(v => {
-  votesReceived[v] = (votesReceived[v] || 0) + 1;
-});
-const roundChanges = {};
+const scoreDeltas = {};
 
 // Compute scores per player
 room.players.forEach(player => {
-  const pid = player.id;
-  const pname = player.name;
-  const role = playerRoles[pname];
-  const votes = room.votes?.[pname] || [];
+  const playerId = player.id;
+  const playerName = player.name;
+  const role = playerRoles[playerName];
+  const playerVotes = room.votes?.[playerName] || [];
   let roundScore = 0;
 
   // ----- SINGLE IMPOSTOR MODE -----
   if (impostorMode === "one") {
     if (role === "impostor") {
-      // Impostor: +2 if not caught
-      const caught = impostorNames.includes(pname);
-      roundScore += caught ? 0 : 2;
+      // Impostor: +2 if not top-voted (not caught)
+      const wasTopVoted = topVotedPlayers.includes(playerName);
+      roundScore += wasTopVoted ? 0 : 2;
     } else {
-      // Non-Impostor: +1 if voted impostor, −1 if got voted
-      const votedForImpostor = votes.some(v => impostorNames.includes(v));
-      if (votedForImpostor) roundScore += 1;
-      if (impostorNames.includes(pname)){ roundScore -= 1;}
+      // Non-Impostor: +1 if voted for top-voted player, −1 if they were top-voted
+      const votedForTopPlayer = playerVotes.some(v => topVotedPlayers.includes(v));
+      if (votedForTopPlayer) roundScore += 1;
+      if (topVotedPlayers.includes(playerName)) roundScore -= 1;
     }
   }
 
   // ----- VARIABLE IMPOSTOR MODE -----
   else {
-    const caught = impostorNames.includes(pname);
+    const wasTopVoted = topVotedPlayers.includes(playerName);
 
     if (role === "impostor") {
-      if (!caught) roundScore += 2;
+      if (!wasTopVoted) roundScore += 2;
     } else {
-      if (caught) roundScore -= 1;
+      if (wasTopVoted) roundScore -= 1;
     }
 
-    // Everyone: +1 per impostor voted
-    const correctVotes = votes.filter(v => impostors.includes(v)).length;
-    roundScore += correctVotes;
-    //Everyone: −1 per normal voted
-    const incorrectVotes = votes.filter(v => playerRoles[v] === "normal").length;
-    roundScore -= incorrectVotes;
-   // 🧠 Clean Ballot logic — includes abstaining players
-const votedNormals = votes.some(v => playerRoles[v] === "normal");
-const missedImpostors =
-  impostors.length > 0 &&
-  impostors.some(i => i !== pname && !votes.includes(i));
+    // Everyone: +1 per actual impostor voted, −1 per normal voted
+    const impostorVoteCount = playerVotes.filter(v => actualImpostors.includes(v)).length;
+    roundScore += impostorVoteCount;
+    const normalVoteCount = playerVotes.filter(v => playerRoles[v] === "normal").length;
+    roundScore -= normalVoteCount;
 
+    // 🧠 Clean Ballot: +1 if voted for all impostors and no normals
+    const votedForNormal = playerVotes.some(v => playerRoles[v] === "normal");
+    const missedImpostor =
+      actualImpostors.length > 0 &&
+      actualImpostors.some(i => i !== playerName && !playerVotes.includes(i));
 
-// A clean ballot means: no normal voted, no impostor missed, or abstained entirely
-const abstained = votes.length === 0 || votes.includes("__NONE__");
-
-if (!votedNormals && !missedImpostors && (abstained || votes.length > 0)) {
-  roundScore += 1;
-}
-
-
-
+    if (!votedForNormal && !missedImpostor) {
+      roundScore += 1;
+    }
   }
-  roundChanges[pid] = roundScore;
-  // Update cumulative totals
-  room.scores[pid] = (room.scores[pid] || 0) + roundScore;
+
+  scoreDeltas[playerId] = roundScore;
+  room.scores[playerId] = (room.scores[playerId] || 0) + roundScore;
 });
 
 // ✅ Emit updated scoreboard
 console.log(`🏆 Scores for ${roomCode}:`, room.scores);
 namespace.to(roomCode).emit("score-update", {
   totals: room.scores,
-  deltas: roundChanges
+  deltas: scoreDeltas
 });
     
     // Optional: reset for next round
